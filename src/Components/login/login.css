@@ -1,0 +1,41 @@
+.loginPage {
+    font-family: Arial, Helvetica, sans-serif;
+    background-image: url(../../../public/login.avif);
+    background-size: cover;
+    height: 100vh;
+    text-align: center;
+    overflow: hidden;
+
+}
+
+.loginPage .box {
+    width: fit-content;
+    margin: auto !important;
+    margin-top: 13% !important;
+    background-color: rgba(255, 255, 255, 0.787);
+    padding: 50px;
+    border-radius: 40px;
+}
+
+.loginPage .box form .input {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.loginPage .box button {
+    position: relative;
+    top: 10px;
+}
+
+@media (min-width:100px) and (max-width:1200px) {
+    .loginPage {
+
+        background-image: url(../../../public/login.avif);
+    }
+
+    .loginPage .box {
+        margin-top: 200px !important;
+    }
+
+}

@@ -1,0 +1,1 @@
+export const base_url = "https://backend.tiposmart.com/tips/api";
