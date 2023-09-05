@@ -1,20 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./login.css";
-import { TextField, Button } from "@mui/material";
+import { TextField, Button, Link } from "@mui/material";
 import { base_url } from "../../constants";
 import axios from "axios";
-import { toast } from "react-toastify";
-import Joi from "joi";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
+import Modal from "react-modal";
+import "remixicon/fonts/remixicon.css";
 
 function Login(props) {
   // state
   const [account, setAccount] = useState({
-    user: "",
+    email: "",
     password: "",
   });
-  const [errors, setErrors] = useState({});
-
+  const [modalIsOpen, setIsOpen] = useState(false);
   // function
+  useEffect = () => {
+    window.onload = () => {
+      sessionStorage.removeItem("token");
+      
+    };
+  };
+
   const handleChange = (e) => {
     const newAccount = {
       ...account,
@@ -22,56 +30,58 @@ function Login(props) {
     };
     setAccount(newAccount);
   };
+
   // ////////////
   const handleSubmit = async () => {
     //   constants
     const url = base_url + `/auth/login`;
-    const data = { user: account.user, password: account.password };
-    const headers = {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Credentials": "true",
-      Accept: "application/json",
-    };
-    console.log("url", url);
-    console.log("data", data);
+    const data = { user: account.email, password: account.password };
 
     await axios
       .post(url, data)
       .then((response) => {
-        console.log("token", response.data.data.token);
+        sessionStorage.setItem("token", response.data.data.token);
+        Toastify({
+          text: `Hello ${response.data.data.name}`,
+          style: {
+            background: "green",
+            color: "white",
+          },
+        }).showToast();
+        window.location = "/users";
       })
       .catch((error) => {
         console.log("err", error);
+        Toastify({
+          text: `Error, Email or password may be wrong`,
+          style: {
+            background: "red",
+            color: "white",
+          },
+        }).showToast();
       });
 
     // make inputs empty
     setAccount({
-      user: "",
+      email: "",
       password: "",
     });
-    //   window.location="/home"
   };
-  // get token
-  // await axios({
-  //   method: "post",
-  //   url: url,
-  //   headers: { headers: headers },
-  //   data: data,
-  // })
 
+  // //////////////////////////////////////
   // return
   return (
     <div className="loginPage">
       <div className="box">
-        <form>
+        <form action="post">
           <TextField
             className="input"
             id="standard-basic"
-            label="User Name"
+            label="Email"
             type="text"
             variant="outlined"
-            name="user"
-            value={account.user}
+            name="email"
+            value={account.email}
             onChange={(e) => handleChange(e)}
             title="Write your user name please.."
             autoFocus
@@ -93,14 +103,34 @@ function Login(props) {
             </p>
           )}
 
+          <div className="buttons">
+            <Link className="forgetPassword" onClick={() => setIsOpen(true)}>
+              Forget Password
+            </Link>
+            <Modal
+              id="modal"
+              isOpen={modalIsOpen}
+              onRequestClose={() => setIsOpen(false)}
+              contentLabel="Example Modal"
+            >
+              <h2> Forgot Password </h2>
+              <i class="ri-close-line" onClick={() => setIsOpen(false)}></i>
+
+              <form>
+                <input type="email" />
+                <button> Verify</button>
+              </form>
+            </Modal>
+          </div>
+          {/* // submit ///////////////////////////////// */}
           <Button
             className="btn btn-primary"
             variant="contained"
             id="submit"
             onClick={handleSubmit}
-            // disabled={
-            //   !account.user || account.password.length < 3 ? true : false
-            // }
+            disabled={
+              !account.email || account.password.length < 3 ? true : false
+            }
           >
             submit
           </Button>

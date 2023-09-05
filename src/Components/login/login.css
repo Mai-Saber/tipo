@@ -23,11 +23,43 @@
     margin-bottom: 15px;
 }
 
-.loginPage .box button {
+.loginPage .box .buttons {
+    display: flex;
+    justify-content: flex-end !important;
     position: relative;
-    top: 10px;
 }
 
+.loginPage .box .buttons .forgetPassword {
+    text-decoration: none !important;
+    color: rgb(126, 121, 121);
+    border: transparent;
+    background-color: transparent;
+    font-size: 13px;
+    position: absolute;
+    top: -10px;
+    right: 1px;
+    cursor: pointer;
+}
+
+.loginPage .box .buttons .forgetPassword:hover {
+    color: blue;
+}
+
+#modal {
+    margin: auto;
+    width: 50%;
+    height: fit-content;
+    z-index: 99999 !important;
+   border-radius: 30%;
+}
+
+
+.loginPage .box #submit {
+    position: relative;
+    top: 20px;
+}
+
+/* responsive */
 @media (min-width:100px) and (max-width:1200px) {
     .loginPage {
 
