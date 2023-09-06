@@ -1,22 +1,22 @@
 .sideBar {
-    height: 100vh;
-    border-right: 1px solid grey;
+  /* 8vh navbar*/
+  height: 92vh;
     width: 10%;
-    padding-top: 7%;
+  padding-top: 2%;
+    background-color: rgba(41, 41, 195, 0.456);
 }
 
 .sideBar ul {
-    list-style: none;
+  list-style: none;
     padding: 0;
 }
 
 .sideBar ul li {
-    padding-bottom: 20px;
+  padding-bottom: 20px;
     width: fit-content;
     margin: auto;
-
 }
 
 .sideBar ul li:hover {
-    color: blue;
+  color: blue;
 }

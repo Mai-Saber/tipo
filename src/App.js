@@ -6,9 +6,11 @@ import "toastify-js/src/toastify.css";
 import NavBar from "./Components/nav bar/navbar";
 import SideBar from "./Components/side bar/sidebar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Profile from "./Components/countries/countries";
 import User from "./Components/user/user";
-import Countries from './Components/countries/countries';
+import Countries from "./Components/countries/countries";
+import Clients from "./Components/clients/clients";
+import Companies from "./Components/companies/companies";
+import Bars from "./common/bars";
 
 function App() {
   return (
@@ -19,18 +21,24 @@ function App() {
           <Routes>
             <Route path="/" exact element={<Login />} />
           </Routes>
-          {sessionStorage.getItem("token") && <NavBar />}
           {/* ///////////////*/}
-          <div className="layout">
-            {sessionStorage.getItem("token") && <SideBar />}
-            <main className="main">
-              <Routes>
-                {/* <Route path="/" exact element={<Login />} /> */}
-                <Route path="/countries" element={<Countries />} />,
-                <Route path="/user" element={<User />} />,
-              </Routes>
-            </main>
-          </div>
+          {sessionStorage.getItem("token") && (
+            <div className="appContent">
+              <NavBar />
+              <div className="layout">
+                <SideBar />
+                <main className="main">
+                  <Routes>
+                    {/* <Route path="/" exact element={<Login />} /> */}
+                    <Route path="/users" element={<User />} />,
+                    <Route path="/countries" element={<Countries />} />,
+                    <Route path="/clients" element={<Clients />} />,
+                    <Route path="/companies" element={<Companies />} />,
+                  </Routes>
+                </main>
+              </div>
+            </div>
+          )}
         </BrowserRouter>
       </div>
     </>

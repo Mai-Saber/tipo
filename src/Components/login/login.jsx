@@ -16,12 +16,12 @@ function Login(props) {
   });
   const [modalIsOpen, setIsOpen] = useState(false);
   // function
-  useEffect = () => {
+  useEffect(() => {
     window.onload = () => {
       sessionStorage.removeItem("token");
-      
     };
-  };
+  }, []); 
+  
 
   const handleChange = (e) => {
     const newAccount = {
