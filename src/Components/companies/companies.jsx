@@ -1,20 +1,15 @@
 import React from "react";
-import Bars from "../../common/bars";
+import DataTables from "../../common/dataTable";
+import Table from "../../common/table";
+import AdvancedFilterDemo from "../../common/table2";
+
 
 function Companies(props) {
   return (
     <div>
-      {/* <Bars/> */}
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
-      <span>companies</span>
+      <Table header="Countries"/>
+    
+      {/* <DataTables /> */}
     </div>
   );
 }

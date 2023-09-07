@@ -10,7 +10,7 @@ import User from "./Components/user/user";
 import Countries from "./Components/countries/countries";
 import Clients from "./Components/clients/clients";
 import Companies from "./Components/companies/companies";
-import Bars from "./common/bars";
+import NotFound from "./Components/notFound/notFound";
 
 function App() {
   return (
@@ -29,11 +29,11 @@ function App() {
                 <SideBar />
                 <main className="main">
                   <Routes>
-                    {/* <Route path="/" exact element={<Login />} /> */}
                     <Route path="/users" element={<User />} />,
                     <Route path="/countries" element={<Countries />} />,
                     <Route path="/clients" element={<Clients />} />,
                     <Route path="/companies" element={<Companies />} />,
+                    <Route path="*" element={<NotFound />} />,
                   </Routes>
                 </main>
               </div>

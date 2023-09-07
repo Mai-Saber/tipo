@@ -1,0 +1,12 @@
+.notFound {
+    height: 100vh;
+    position: relative;
+}
+
+.notFound img {
+ position: absolute;
+ top: 25px;
+ left: 25%;
+    width: 50%;
+    height: 60%;
+}
