@@ -1,17 +1,18 @@
-import React from "react";
-import DataTables from "../../common/dataTable";
-import Table from "../../common/table";
-import AdvancedFilterDemo from "../../common/table2";
+import React from 'react';
 
-
-function Companies(props) {
+function companies(props) {
   return (
     <div>
-      <Table header="Countries"/>
-    
-      {/* <DataTables /> */}
+      companies
+      companies
+      companies
+      companies
+      companies
+      companies
+      companies
+      companies
     </div>
   );
 }
 
-export default Companies;
+export default companies;

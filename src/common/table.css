@@ -1,0 +1,88 @@
+.commonTable {
+    padding: 10px;
+    box-shadow: 3px 3px rgba(159, 157, 157, 0.288) !important;
+    position: relative;
+}
+
+.commonTable .header {
+    text-align: center;
+    color: rgb(198, 134, 199);
+    font-style: italic;
+    font: 50px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.commonTable .search-add {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    margin: auto;
+    padding: 10px 0;
+}
+
+.commonTable .inputSearch {
+    width: 80%;
+    text-align: center;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    padding: 2px 10px;
+    border: 1px solid rgba(128, 128, 128, 0.525);
+    position: relative;
+    top: 8px;
+
+}
+
+.commonTable .add {
+    width: 50px;
+    height: fit-content;
+    background-color: rgba(0, 0, 255, 0.512);
+    color: white;
+    font-size: 20px;
+
+}
+
+.commonTable table {
+    width: 100%;
+}
+
+.commonTable table td,
+.commonTable table th {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.397);
+    padding: 5px;
+    text-align: center;
+}
+
+.commonTable table tr:hover {
+    background-color: rgba(166, 163, 163, 0.202);
+}
+
+.commonTable table .icons a {
+    text-decoration: none;
+    padding-right: 10px;
+}
+
+.commonTable table .icons .edit {
+    color: green;
+
+}
+
+.commonTable table .icons .delete {
+    color: red;
+
+}
+
+.commonTable .pagination {
+    width: fit-content;
+    /* background-color: red !important; */
+    margin-top: 10px;
+    position: relative;
+    left: 70%;
+    /* bottom: 10px; */
+
+}
+
+.commonTable .MuiInputBase-root {
+    position: relative;
+    top: -5px;
+}

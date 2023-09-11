@@ -60,15 +60,15 @@ export default function AdvancedFilterDemo() {
     }
   };
 
-  useEffect(() => {
-      const res = service.getUsers
-      console.log(res)
-    //       .then((data) => {
-    //   setCustomers(getCustomers(data));
-    //   setLoading(false);
-    // });
-    initFilters();
-  }, []);
+  // useEffect(() => {
+  //     const res = service.getUsers
+  //     console.log(res)
+  //   //       .then((data) => {
+  //   //   setCustomers(getCustomers(data));
+  //   //   setLoading(false);
+  //   // });
+  //   initFilters();
+  // }, []);
 
   const getCustomers = (data) => {
     return [...(data || [])].map((d) => {

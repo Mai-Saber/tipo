@@ -1,8 +1,8 @@
 import axios from "axios";
 
-export const getUsers = async () => {
-  const res = await axios.get(
-    "https://backend.tiposmart.com/tips/api/country/countries"
-  );
+export const base_url = "https://backend.tiposmart.com/tips/api";
+
+export const getData = async (url) => {
+  const res = await axios.get(`${base_url}+${url}`);
   return res;
 };
