@@ -1,0 +1,47 @@
+.upperTable {
+    width: 90vw;
+    padding-left: 20%;
+    height: 50px;
+    margin: 0 auto 10px;
+}
+
+.upperTable .inputSearch {
+    position: relative;
+    width: 100%;
+    top: 10px;
+    height: 40px;
+    text-align: center;
+    border-radius: 20px;
+    border: 1px solid rgba(128, 128, 128, 0.525);
+}
+
+.upperTable .filter {
+    width: 100%;
+}
+
+.upperTable .add {
+    width: 50px;
+    height: 40px;
+    background-color: rgba(0, 0, 255, 0.512);
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    position: relative;
+    top: 10px;
+
+}
+
+/* /////// */
+@media (min-width:100px) and (max-width:900px) {
+    .upperTable {
+        display: unset;
+        margin-top: 0;
+        padding: 0;
+        
+    }
+
+    .upperTable .inputSearch {
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+}

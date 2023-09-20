@@ -1,0 +1,27 @@
+.showModal {
+    background-color: rgba(128, 128, 128, 0.486);
+}
+
+.showModal .header {
+    color: rgba(48, 48, 231, 0.736);
+}
+
+.showModal .label {
+    font-weight: bold;
+    color: rgba(48, 48, 231, 0.736);
+}
+
+.showModal .close {
+    margin: auto;
+}
+
+/* ///////////// */
+.addModal {
+    height: 100vh;
+}
+
+.addModal .input {
+    color: blue;
+    width: 100% !important;
+    padding-bottom: 10px;
+}

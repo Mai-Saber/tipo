@@ -53,7 +53,7 @@ function Login(props) {
       .catch((error) => {
         console.log("err", error);
         Toastify({
-          text: `Error, Email or password may be wrong`,
+          text: `${error.response.data.message}`,
           style: {
             background: "red",
             color: "white",

@@ -1,28 +1,32 @@
 .navBar {
   width: 100vw;
-  height: 8vh;
-  /* border-bottom: 1px solid rgba(128, 128, 128, 0.287); */
   display: flex;
   justify-content: space-between;
-  padding: 15px 50px;
-  position: sticky;
+  position: fixed;
   top: 0px;
-  background-color: rgba(41, 41, 195, 0.456);
+  background-color: var(--main-color) !important;
+    height: 70px;
+    z-index: 9999;
+    font-size: 18px;
+  }
+  
+  .navBar .mainItems {
+    width: 90vw;
 }
 
-.navBar div {
-  display: flex;
-  justify-content: space-between;
-  width: 30%;
+.navBar a {
+  color: var(--white-color) !important;
+  text-decoration: none;
 }
 
-.navBar .left img {
-  width: 40px;
-  height: 40px;
+.navBar img {
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   position: relative;
-  bottom: 10px;
+  right: 30px;
 }
+
 .navBar ul {
   list-style: none;
   display: flex;
@@ -30,4 +34,62 @@
 
 .navBar ul li {
   padding-right: 50px;
+}
+
+/* //////////////////////////// */
+.routes {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .navBar .mainItems {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .navBar .mainItems .right {
+    position: relative;
+    right: 100px;
+  }
+}
+
+@media (min-width: 100px) and (max-width: 900px) {
+  .navBar {
+    height: unset;
+    position: relative;
+    margin-bottom: -40px;
+  }
+
+  .navBar img {
+    margin-bottom: 20px;
+    position: relative;
+    right: 5px;
+    top: 8px;
+  }
+
+  .navBar .toggleButton {
+    background-color: white !important;
+    position: relative;
+    right: 20px;
+  }
+
+  .items {
+    display: flex;
+    justify-content: space-between !important;
+    position: relative;
+    right: 30px;
+  }
+
+  .routes {
+    display: unset;
+    width: 50%;
+  }
+
+  .routes ul {
+    display: block;
+  }
+
+  .routes ul li {
+    margin-bottom: 10px;
+  }
 }

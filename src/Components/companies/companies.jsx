@@ -1,18 +1,11 @@
 import React from 'react';
 
-function companies(props) {
+function Companies(props) {
   return (
     <div>
-      companies
-      companies
-      companies
-      companies
-      companies
-      companies
-      companies
-      companies
+      l;mskjdecn
     </div>
   );
 }
 
-export default companies;
+export default Companies;

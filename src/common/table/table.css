@@ -1,0 +1,63 @@
+.commonTable {
+    padding: 10px;
+    box-shadow: 5px 5px rgba(159, 157, 157, 0.288) !important;
+    position: relative;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+}
+
+.commonTable table {
+    width: 100%;
+    height: 90%;
+    overflow: auto;
+}
+
+.commonTable table th,
+.commonTable table td {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.397);
+    padding: 7px;
+    text-align: center;
+
+}
+
+
+.commonTable table tbody tr:hover {
+    background-color: rgba(166, 163, 163, 0.202);
+}
+
+.commonTable table .icons a {
+    text-decoration: none;
+    padding-right: 10px;
+}
+
+.commonTable table .icons .edit {
+    color: green;
+
+}
+
+.commonTable table .icons .delete {
+    color: red;
+
+}
+
+.commonTable table .icons .show {
+    color: blue;
+
+}
+
+/* ////////// */
+@media (min-width:100px) and (max-width:900px) {
+    .commonTable {
+        width: 80vw !important;
+        overflow: auto !important;
+        height: 90%;
+        margin-top: 20px;
+    }
+
+    .commonTable table {
+        width: fit-content;
+        height: 90%;
+        /* overflow: scroll !important; */
+    }
+
+}
