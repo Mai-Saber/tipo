@@ -1,8 +1,7 @@
 import * as React from "react";
 import Paper from "@mui/material/Paper";
-import TablePagination from "@mui/material/TablePagination";
 import "./table.css";
-import UpperTable from "../upperTable/upperTable";
+import { useTranslation } from "react-i18next";
 
 export default function StickyHeadTable(props) {
   const [page, setPage] = React.useState(0);
@@ -12,6 +11,8 @@ export default function StickyHeadTable(props) {
     setPage(newPage);
     console.log("handleChangePage");
   };
+    const { t } = useTranslation();
+
 
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }} className="commonTable">
@@ -20,7 +21,7 @@ export default function StickyHeadTable(props) {
         <thead>
           <tr>
             {props.columns?.map((col) => (
-              <th key={col}> {col}</th>
+              <th key={col}> {t(col)}</th>
             ))}
             <th> </th>
           </tr>

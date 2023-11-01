@@ -1,6 +1,7 @@
 import axios from "axios";
 
-export const base_url = "https://backend.tiposmart.com/tips/api";
+export const base_url = "https://backend.profitsway.net/erp/public/api";
+
 export const config = {
   headers: {
     " Access-Control-Allow-Credentials": true,

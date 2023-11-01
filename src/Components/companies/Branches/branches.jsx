@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from "react";
-import Table from "../../common/table/table";
+import Table from "../../../common/table/table";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { base_url, config } from "../../service/service";
+import { base_url, config } from "../../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import MenuItem from "@mui/material/MenuItem";
+import UpperTable from "../../../common/upperTable/upperTable";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import "../../common/show modal/showModal.css";
+import "../../../common/show modal/showModal.css";
 import { TextField } from "@mui/material";
 import TablePagination from "@mui/material/TablePagination";
-import TablePaginationActions from "../../common/pagination/pagination";
+import TablePaginationActions from "../../../common/pagination/pagination";
 import { useTranslation } from "react-i18next";
-import { Col, Row } from "react-bootstrap";
-import Box from "@mui/material/Box";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import "../../common/upperTable/upperTable.css";
-import Loading from "../../common/loading/loading";
+import Loading from "../../../common/loading/loading";
 
-function Users(props) {
+function Branches(props) {
   const [loading, setLoading] = useState(true);
-  const [filterTypes, setFilterTypes] = useState([]);
-  const [currentFilterType, setCurrentFilterType] = useState("");
+
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
   //modals
@@ -33,13 +29,12 @@ function Users(props) {
   const [editModal, setEditModal] = useState(false);
   const [item, setItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newUser, setNewUser] = useState({
+  const [newBranch, setNewBranch] = useState({
+    client_id: clientID,
+    company_id: companyID,
     name: "",
-    email: "",
     phone: "",
-    password: "",
     address: "",
-    user_account_type_id: "",
   });
   const { t } = useTranslation();
 
@@ -50,7 +45,7 @@ function Users(props) {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - row.length) : 0;
 
-  const handleChangePage = (newPage) => {
+  const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
@@ -66,37 +61,25 @@ function Users(props) {
       setLoading(false);
     }, 3000);
 
-    // get USER
-    const getUsers = async () => {
-      const url = `${base_url}/admin/users`;
+    // get companies
+    const getBranches = async () => {
+      const url = `${base_url}/admin/company/branches/${companyID}`;
       const res = await axios.get(url);
-      setColumns(["Name", "Email", "Phone"]);
+      setColumns(["CompanyName", "BranchName", "Phone"]);
       setRow(res.data.data);
-    };
-    // get filter types
-
-    const getFilterTypes = async () => {
-      const res = await axios.get(`${base_url}/system-lookups/1`);
-      let arr = [];
-      res.data.data.map((obj) => {
-        if (obj.name === "Root" || obj.name === "Admin") {
-          arr.push(obj);
-        }
-      });
-      setFilterTypes(arr);
+     
     };
     // call functions
-    getUsers();
-    getFilterTypes();
+    getBranches();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newUser,
+      ...newBranch,
       [e.target.name]: e.target.value,
     };
-    setNewUser(newData);
+    setNewBranch(newData);
 
     const newItem = {
       ...editItem,
@@ -107,38 +90,23 @@ function Users(props) {
 
   // search & filter
   const handleChangeSearch = async (e) => {
-    const allData = [row];
-    console.log(allData);
     if (e.target.value.trim()) {
       const res = await axios.get(
-        `${base_url}/admin/users/search?query_string= ${e.target.value}`
+        `${base_url}/admin/company/branches/search/${companyID}?query_string=${e.target.value}`
       );
       setRow(res.data.data);
     }
     if (e.target.value === "") {
-      const url = `${base_url}/admin/users`;
+      const url = `${base_url}/admin/company/branches/${companyID}`;
       const res = await axios.get(url);
       setRow(res.data.data);
-    }
-  };
-
-  const handleChangeFilter = async (event) => {
-    setCurrentFilterType(event.target.value);
-    // set row with target value description
-    const res = await axios.get(`${base_url}/admin/users`);
-    setRow(res.data.data);
-
-    if (event.target.value !== "all") {
-      setRow(
-        res.data.data.filter((el) => el.account_type.id === event.target.value)
-      );
     }
   };
 
   // delete
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/user/${id}`, config);
+      await axios.delete(`${base_url}/admin/company/branch/${id}`, config);
       const newRow = row.filter((item) => item.id !== id);
       setRow(newRow); // setRow(filterItems);
       Toastify({
@@ -164,26 +132,24 @@ function Users(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddUsers = async () => {
-    console.log(newUser);
+  const handleSubmitAddBranch = async () => {
     await axios
-      .post(`${base_url}/admin/user`, newUser)
-      .then((response) => {
+      .post(`${base_url}/admin/company/branch`, newBranch)
+      .then((res) => {
         Toastify({
-          text: `country created successfully `,
+          text: `Branch created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        row.unshift(response.data.data);
-        setNewUser({
+        row.unshift(res.data.data);
+        setNewBranch({
+          client_id: clientID,
+          company_id: companyID,
           name: "",
-          email: "",
           phone: "",
-          password: "",
           address: "",
-          user_account_type_id: "",
         });
         setAddModal(false);
       })
@@ -202,15 +168,16 @@ function Users(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/user/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company/branch/${id}`,
+      config
+    );
     setItem(res.data.data);
-    console.log("item", res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/user/${id}`);
-    console.log("edit", res.data.data);
+    const res = await axios.get(`${base_url}/admin/company/branch/${id}`);
     setEditItem(res.data.data);
     setEditModal(true);
   };
@@ -218,15 +185,15 @@ function Users(props) {
   const handleSubmitEdit = async (id) => {
     const data = {
       name: editItem.name,
+      email: editItem.email,
       phone: editItem.phone,
-      password: editItem.password,
       address: editItem.address,
     };
     await axios
-      .patch(`${base_url}/admin/user/${id}`, data)
+      .patch(`${base_url}/admin/company/branch/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `User updated successfully`,
+          text: `Branch updated successfully`,
           style: {
             background: "green",
             color: "white",
@@ -263,56 +230,17 @@ function Users(props) {
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
 
-      {/* user */}
+      {/* branches */}
       {!loading && (
-        <div className="users">
+        <div className="branches">
           {/* header */}
-          <h1 className="header">{t("Users")}</h1>
+          <h1 className="header">{t("Branches")}</h1>
 
           {/* upper table */}
-          <div className="upperTable">
-            <Row>
-              {/* search */}
-              <Col xs={12} xl={4}>
-                <input
-                  placeholder={t("SearchByName")}
-                  type="Search"
-                  onChange={handleChangeSearch}
-                  className="inputSearch"
-                />
-              </Col>
-              {/* filter types */}
-              <Col xs={9} xl={4}>
-                <Box className="filter">
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      {t("UserType")}
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      value={currentFilterType}
-                      label={t("UserType")}
-                      onChange={handleChangeFilter}
-                    >
-                      <MenuItem value="all">{t("All")}</MenuItem>
-                      {filterTypes?.map((el) => (
-                        <MenuItem key={el.id} value={el.id}>
-                          {t(el.name)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Col>
-              {/* add button */}
-              <Col xs={3} xl={4}>
-                <button onClick={handleAdd} className="add btn">
-                  <i className="ri-add-circle-line"></i>
-                </button>
-              </Col>
-            </Row>
-          </div>
+          <UpperTable
+            handleChangeSearch={handleChangeSearch}
+            handleAdd={handleAdd}
+          />
 
           {/* table */}
           {row.length !== 0 ? (
@@ -329,8 +257,8 @@ function Users(props) {
                 )?.map((item) => (
                   <>
                     <tr key={item.id}>
-                      <td className="name">{item.name} </td>
-                      <td>{item.email}</td>
+                      <td className="name">{item.company?.name} </td>
+                      <td>{item.name}</td>
                       <td>{item.phone}</td>
 
                       <td className="icons">
@@ -393,7 +321,7 @@ function Users(props) {
             </Table>
           ) : (
             <div className="noData">
-              <h3>Oops,there is no user, let's create one </h3>
+              <h3>This Company hasn't any branches, let's create one </h3>
               <img src="../../../../assets/no-data.avif" alt="no data" />
             </div>
           )}
@@ -411,19 +339,29 @@ function Users(props) {
                 {item.name}
               </p>
               <p>
-                <span className="label">{t("Email")} :</span> {item.email}
+                <span className="label">{t("Id")} : </span> {item.id}
               </p>
               <p>
                 <span className="label">{t("Phone")} : </span>
                 {item.phone}
               </p>
               <p>
-                <span className="label">{t("Id")} : </span>
-                {item.id}
+                <span className="label">{t("Address")} : </span>
+                {item.address}
+              </p>
+              <hr />
+              <h3>{t("CompanyDetails")}</h3>
+              <p>
+                <span className="label">{t("CompanyName")} : </span>
+                {item.company?.name}
               </p>
               <p>
-                <span className="label">{t("CreatedAt")} : </span>
-                {item.created_at}
+                <span className="label">{t("CompanyId")} : </span>
+                {item.company?.id}
+              </p>
+              <p>
+                <span className="label"> {t("ClientId")} : </span>
+                {item.company?.client_id}
               </p>
             </Modal.Body>
 
@@ -440,7 +378,7 @@ function Users(props) {
           {/* add modal */}
           <Modal show={addModal} onHide={handleClose} className="Modal">
             <Modal.Header closeButton>
-              <Modal.Title> {t("AddNewUser")}</Modal.Title>
+              <Modal.Title> {t("AddNewBranch")}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <form action="post">
@@ -452,17 +390,7 @@ function Users(props) {
                   type="text"
                   label={t("Name")}
                   name="name"
-                  value={newUser.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Email")}
-                  name="email"
-                  value={newUser.email}
+                  value={newBranch.name}
                   onChange={handleChange}
                 />
                 <TextField
@@ -472,17 +400,7 @@ function Users(props) {
                   type="number"
                   label={t("Phone")}
                   name="phone"
-                  value={newUser.phone}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={newUser.password}
+                  value={newBranch.phone}
                   onChange={handleChange}
                 />
                 <TextField
@@ -492,31 +410,29 @@ function Users(props) {
                   type="text"
                   label={t("Address")}
                   name="address"
-                  value={newUser.address}
+                  value={newBranch.address}
                   onChange={handleChange}
                 />
-                {/* select user type */}
-                <Box className="type">
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      {t("UserType")}
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      name="user_account_type_id"
-                      value={newUser.user_account_type_id}
-                      label={t("UserType")}
-                      onChange={handleChange}
-                    >
-                      {filterTypes?.map((el) => (
-                        <MenuItem key={el.id} value={el.id}>
-                          {t(el.name)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("CompanyId")}
+                  name="company_id"
+                  value={newBranch.company_id}
+                  onChange={handleChange}
+                />
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("ClientId")}
+                  name="client_id"
+                  value={newBranch.client_id}
+                  onChange={handleChange}
+                />
               </form>
             </Modal.Body>
             <Modal.Footer>
@@ -530,7 +446,7 @@ function Users(props) {
               <Button
                 className="btn btn-primary"
                 variant="primary"
-                onClick={handleSubmitAddUsers}
+                onClick={handleSubmitAddBranch}
               >
                 {t("Save")} 
               </Button>
@@ -539,7 +455,7 @@ function Users(props) {
           {/* edit modal */}
           <Modal show={editModal} onHide={handleClose} className="Modal">
             <Modal.Header closeButton>
-              <Modal.Title> {t("EditUser")}</Modal.Title>
+              <Modal.Title>{t("EditBranch")}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <form action="post">
@@ -569,9 +485,9 @@ function Users(props) {
                   id="outlined-basic"
                   variant="outlined"
                   type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={editItem.password}
+                  label={t("Email")}
+                  name="email"
+                  value={editItem.email}
                   onChange={handleChange}
                 />
                 <TextField
@@ -599,7 +515,7 @@ function Users(props) {
                 variant="primary"
                 onClick={() => handleSubmitEdit(editItem.id)}
               >
-                {t("Save")} 
+                {t("Save")}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -609,7 +525,4 @@ function Users(props) {
   );
 }
 
-export default Users;
-
-//  "country_id":"9a2ddaa8-33a3-46d8-a1f6-8d2da683fb3f",
-//  "governorate_id":"9a11c064-b2fb-40ed-bcf2-a0225ffa0a4f"
+export default Branches;

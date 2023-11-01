@@ -1,5 +1,6 @@
 .showModal {
     background-color: rgba(128, 128, 128, 0.486);
+    z-index: 9999;
 }
 
 .showModal .header {
@@ -14,13 +15,17 @@
 .showModal .close {
     margin: auto;
 }
-
+/* .modal .btn-close{
+position: relative;
+right: 60%;
+} */
 /* ///////////// */
-.addModal {
+.Modal {
     height: 100vh;
+        /* z-index: 8888; */
 }
 
-.addModal .input {
+.Modal .input {
     color: blue;
     width: 100% !important;
     padding-bottom: 10px;

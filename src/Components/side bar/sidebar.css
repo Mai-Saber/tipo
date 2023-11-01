@@ -2,26 +2,39 @@
   height: 100vh;
   width: 10%;
   padding-top: 7%;
-    background-color: var(--main-color);
+  /* background-color: var(--main-color); */
+  background-color: #1CB5E0;
+   position: sticky;
+    top: 1px;
 }
 
 .sideBar ul {
   list-style: none;
-    padding: 0;
+  padding: 0;
 }
 
 .sideBar ul li {
   padding-bottom: 20px;
-    width: fit-content;
+  width: fit-content;
     margin: auto;
 }
 
 .sideBar ul li:hover {
   color: blue;
 }
-
-@media (min-width:100px) and (max-width:900px) {
+/* ////////////////////////////////// */
+@media (min-width: 100px) and (max-width: 900px) {
   .sideBar {
     display: none;
+    width: 95vw !important;
+      position: fixed;
+      animation: fadeInLeft;
+      animation-duration: 1000ms;
+      top: 90px;
+      z-index: 9999999999999999999999999999999999999999;
+    }
+    
+    .sideBar ul li a {
+      padding: 0 5px;
   }
 }

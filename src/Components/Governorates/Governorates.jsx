@@ -13,18 +13,21 @@ import { TextField } from "@mui/material";
 import TablePagination from "@mui/material/TablePagination";
 import TablePaginationActions from "../../common/pagination/pagination";
 import { useTranslation } from "react-i18next";
+import "../../common/upperTable/upperTable.css";
 import { Col, Row } from "react-bootstrap";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import "../../common/upperTable/upperTable.css";
 import Loading from "../../common/loading/loading";
 
-function Users(props) {
+function Governorate(props) {
   const [loading, setLoading] = useState(true);
-  const [filterTypes, setFilterTypes] = useState([]);
-  const [currentFilterType, setCurrentFilterType] = useState("");
+  const [filterCountries, setFilterCountries] = useState([]);
+  const [currentFilterCountryId, setCurrentFilterCountryId] = useState(
+    props.countryInApp
+  );
+  const [searchValue, setSearchValue] = useState("");
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
   //modals
@@ -33,24 +36,22 @@ function Users(props) {
   const [editModal, setEditModal] = useState(false);
   const [item, setItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newUser, setNewUser] = useState({
+  const [newGovernorate, setNewGovernorate] = useState({
     name: "",
-    email: "",
-    phone: "",
-    password: "",
-    address: "",
-    user_account_type_id: "",
+    name_ar: "",
+    prefix: "",
+    country_id: "",
   });
   const { t } = useTranslation();
 
   // pagination
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(3);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - row.length) : 0;
 
-  const handleChangePage = (newPage) => {
+  const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
@@ -66,37 +67,114 @@ function Users(props) {
       setLoading(false);
     }, 3000);
 
-    // get USER
-    const getUsers = async () => {
-      const url = `${base_url}/admin/users`;
+    // get Governorate
+    const getGovernorate = async () => {
+      const url = `${base_url}/admin/governorates-search-all`;
       const res = await axios.get(url);
-      setColumns(["Name", "Email", "Phone"]);
+      console.log(res.data.data);
+      setColumns(["Name", "ArabicName", "Prefix"]);
       setRow(res.data.data);
-    };
-    // get filter types
 
-    const getFilterTypes = async () => {
-      const res = await axios.get(`${base_url}/system-lookups/1`);
-      let arr = [];
-      res.data.data.map((obj) => {
-        if (obj.name === "Root" || obj.name === "Admin") {
-          arr.push(obj);
-        }
-      });
-      setFilterTypes(arr);
     };
+    // get filter countries
+    const filterCountries = async () => {
+      const res = await axios.get(`${base_url}/admin/countries`);
+      setFilterCountries(res.data.data);
+    };
+    // setRowBasedOnFilter
+    const setRowBasedOnFilter = async () => {
+      console.log("cc", currentFilterCountryId);
+      if (currentFilterCountryId) {
+        await axios
+          .get(`${base_url}/admin/governorates/${currentFilterCountryId}`)
+          .then((res) => {
+            setRow(res.data.data);
+          })
+          .catch((err) => {
+            console.log("err", err);
+          });
+      }
+    };
+
     // call functions
-    getUsers();
-    getFilterTypes();
+    getGovernorate();
+    filterCountries();
+    setRowBasedOnFilter();
   }, []);
+
+  // search & filter
+  const handleChangeSearch = async (e) => {
+    setSearchValue(e.target.value);
+
+    // if input has value >> set row
+    if (e.target.value.trim()) {
+      const res = await axios.get(
+        `${base_url}/admin/governorates-search-all?query_string=${e.target.value}`
+      );
+      setRow(res.data.data);
+    }
+
+    // if input empty >> reset row
+    if (e.target.value === "") {
+      const url = `${base_url}/admin/governorates-search-all`;
+      const res = await axios.get(url);
+      setRow(res.data.data);
+    }
+
+    // if search & filter have value
+    if (e.target.value.trim() && currentFilterCountryId.trim()) {
+      console.log("qs", e.target.value);
+      console.log("ci", currentFilterCountryId);
+
+      await axios
+        .get(
+          `${base_url}/admin/governorates-search-all?query_string=${e.target.value}&country_id=${currentFilterCountryId}`
+        )
+        .then((res) => {
+          setRow(res.data.data);
+          console.log("rrr", res);
+        });
+    }
+  };
+
+  const handleChangeFilter = async (e) => {
+    setCurrentFilterCountryId(e.target.value);
+
+    // handle filter value
+    if (e.target.value === "All") {
+      const res = await axios.get(`${base_url}/admin/governorates-search-all`);
+      setRow(res.data.data);
+    } else {
+      await axios
+        .get(`${base_url}/admin/governorates/${e.target.value}`)
+        .then((res) => {
+          setRow(res.data.data);
+        })
+        .catch((err) => {
+          console.log("err", err);
+        });
+    }
+
+    // if search & filter have value
+    if (searchValue.trim() && e.target.value.trim()) {
+      await axios
+        .get(
+          `${base_url}/admin/governorates-search-all?query_string=${searchValue}&country_id=${e.target.value}`
+        )
+        .then((res) => {
+          setRow(res.data.data);
+          console.log("rrr", res);
+        });
+    }
+  };
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newUser,
+      ...newGovernorate,
       [e.target.name]: e.target.value,
     };
-    setNewUser(newData);
+    setNewGovernorate(newData);
 
     const newItem = {
       ...editItem,
@@ -105,40 +183,10 @@ function Users(props) {
     setEditItem(newItem);
   };
 
-  // search & filter
-  const handleChangeSearch = async (e) => {
-    const allData = [row];
-    console.log(allData);
-    if (e.target.value.trim()) {
-      const res = await axios.get(
-        `${base_url}/admin/users/search?query_string= ${e.target.value}`
-      );
-      setRow(res.data.data);
-    }
-    if (e.target.value === "") {
-      const url = `${base_url}/admin/users`;
-      const res = await axios.get(url);
-      setRow(res.data.data);
-    }
-  };
-
-  const handleChangeFilter = async (event) => {
-    setCurrentFilterType(event.target.value);
-    // set row with target value description
-    const res = await axios.get(`${base_url}/admin/users`);
-    setRow(res.data.data);
-
-    if (event.target.value !== "all") {
-      setRow(
-        res.data.data.filter((el) => el.account_type.id === event.target.value)
-      );
-    }
-  };
-
   // delete
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/user/${id}`, config);
+      await axios.delete(`${base_url}/admin/governorate/${id}`, config);
       const newRow = row.filter((item) => item.id !== id);
       setRow(newRow); // setRow(filterItems);
       Toastify({
@@ -162,28 +210,26 @@ function Users(props) {
   // add
   const handleAdd = () => {
     setAddModal(true);
+    setNewGovernorate({ name: "", name_ar: "", prefix: "", country_id: "" });
   };
 
-  const handleSubmitAddUsers = async () => {
-    console.log(newUser);
+  const handleSubmitAddGovernorate = async () => {
     await axios
-      .post(`${base_url}/admin/user`, newUser)
-      .then((response) => {
+      .post(`${base_url}/admin/governorate`, newGovernorate)
+      .then((res) => {
         Toastify({
-          text: `country created successfully `,
+          text: `Governorate created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        row.unshift(response.data.data);
-        setNewUser({
+        row.unshift(res.data.data);
+        setNewGovernorate({
           name: "",
-          email: "",
-          phone: "",
-          password: "",
-          address: "",
-          user_account_type_id: "",
+          name_ar: "",
+          prefix: "",
+          country_id: "",
         });
         setAddModal(false);
       })
@@ -202,14 +248,14 @@ function Users(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/user/${id}`, config);
+    const res = await axios.get(`${base_url}/admin/governorate/${id}`, config);
     setItem(res.data.data);
-    console.log("item", res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/user/${id}`);
+    console.log("edit", id);
+    const res = await axios.get(`${base_url}/admin/governorate/${id}`);
     console.log("edit", res.data.data);
     setEditItem(res.data.data);
     setEditModal(true);
@@ -218,15 +264,14 @@ function Users(props) {
   const handleSubmitEdit = async (id) => {
     const data = {
       name: editItem.name,
-      phone: editItem.phone,
-      password: editItem.password,
-      address: editItem.address,
+      name_ar: editItem.name_ar,
     };
+
     await axios
-      .patch(`${base_url}/admin/user/${id}`, data)
+      .patch(`${base_url}/admin/governorate/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `User updated successfully`,
+          text: `Governorate updated successfully`,
           style: {
             background: "green",
             color: "white",
@@ -257,17 +302,18 @@ function Users(props) {
     setAddModal(false);
     setEditModal(false);
   };
-  // ////////////////////////////////////////
+
+  /////////////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
 
-      {/* user */}
+      {/* governorate */}
       {!loading && (
-        <div className="users">
+        <div className="governorate">
           {/* header */}
-          <h1 className="header">{t("Users")}</h1>
+          <h1 className="header">{t("Governorate")}</h1>
 
           {/* upper table */}
           <div className="upperTable">
@@ -275,8 +321,10 @@ function Users(props) {
               {/* search */}
               <Col xs={12} xl={4}>
                 <input
-                  placeholder={t("SearchByName")}
-                  type="Search"
+                  placeholder={t("SearchByGovernorateName")}
+                  type="search"
+                  value={searchValue}
+                  name="searchValue"
                   onChange={handleChangeSearch}
                   className="inputSearch"
                 />
@@ -286,19 +334,19 @@ function Users(props) {
                 <Box className="filter">
                   <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label">
-                      {t("UserType")}
+                     {t("SelectCountry")}
                     </InputLabel>
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={currentFilterType}
-                      label={t("UserType")}
+                      value={currentFilterCountryId}
+                      label="Select Country"
                       onChange={handleChangeFilter}
                     >
-                      <MenuItem value="all">{t("All")}</MenuItem>
-                      {filterTypes?.map((el) => (
+                      <MenuItem value="All">All</MenuItem>
+                      {filterCountries?.map((el) => (
                         <MenuItem key={el.id} value={el.id}>
-                          {t(el.name)}
+                          {el.name}
                         </MenuItem>
                       ))}
                     </Select>
@@ -330,8 +378,8 @@ function Users(props) {
                   <>
                     <tr key={item.id}>
                       <td className="name">{item.name} </td>
-                      <td>{item.email}</td>
-                      <td>{item.phone}</td>
+                      <td>{item.name_ar} </td>
+                      <td>{item.prefix}</td>
 
                       <td className="icons">
                         {/* edit */}
@@ -368,13 +416,7 @@ function Users(props) {
                 {/* pagination */}
                 <TablePagination
                   className="pagination"
-                  rowsPerPageOptions={[
-                    3,
-                    5,
-                    10,
-                    25,
-                    { label: "All", value: -1 },
-                  ]}
+                  rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                   colSpan={3}
                   count={row.length}
                   rowsPerPage={rowsPerPage}
@@ -393,7 +435,7 @@ function Users(props) {
             </Table>
           ) : (
             <div className="noData">
-              <h3>Oops,there is no user, let's create one </h3>
+              <h3>Oops,there is no Governorate, let's create one </h3>
               <img src="../../../../assets/no-data.avif" alt="no data" />
             </div>
           )}
@@ -411,19 +453,20 @@ function Users(props) {
                 {item.name}
               </p>
               <p>
-                <span className="label">{t("Email")} :</span> {item.email}
+                <span className="label"> {t("ArabicName")} : </span>
+                {item.name_ar}
               </p>
               <p>
-                <span className="label">{t("Phone")} : </span>
-                {item.phone}
+                <span className="label">{t("Id")} :</span> {item.id}
+              </p>
+
+              <p>
+                <span className="label">{t("CountryId")} : </span>
+                {item.country_id}
               </p>
               <p>
-                <span className="label">{t("Id")} : </span>
-                {item.id}
-              </p>
-              <p>
-                <span className="label">{t("CreatedAt")} : </span>
-                {item.created_at}
+                <span className="label">{t("Prefix")} : </span>
+                {item.prefix}
               </p>
             </Modal.Body>
 
@@ -440,7 +483,7 @@ function Users(props) {
           {/* add modal */}
           <Modal show={addModal} onHide={handleClose} className="Modal">
             <Modal.Header closeButton>
-              <Modal.Title> {t("AddNewUser")}</Modal.Title>
+              <Modal.Title>{t("AddNewGovernorate")}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <form action="post">
@@ -452,7 +495,7 @@ function Users(props) {
                   type="text"
                   label={t("Name")}
                   name="name"
-                  value={newUser.name}
+                  value={newGovernorate.name}
                   onChange={handleChange}
                 />
                 <TextField
@@ -460,19 +503,20 @@ function Users(props) {
                   id="outlined-basic"
                   variant="outlined"
                   type="text"
-                  label={t("Email")}
-                  name="email"
-                  value={newUser.email}
+                  label={t("ArabicName")}
+                  name="name_ar"
+                  value={newGovernorate.name_ar}
                   onChange={handleChange}
                 />
+
                 <TextField
                   className="input"
                   id="outlined-basic"
                   variant="outlined"
-                  type="number"
-                  label={t("Phone")}
-                  name="phone"
-                  value={newUser.phone}
+                  type="text"
+                  label={t("CountryId")}
+                  name="country_id"
+                  value={newGovernorate.country_id}
                   onChange={handleChange}
                 />
                 <TextField
@@ -480,43 +524,11 @@ function Users(props) {
                   id="outlined-basic"
                   variant="outlined"
                   type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={newUser.password}
+                  label={t("Prefix")}
+                  name="prefix"
+                  value={newGovernorate.prefix}
                   onChange={handleChange}
                 />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Address")}
-                  name="address"
-                  value={newUser.address}
-                  onChange={handleChange}
-                />
-                {/* select user type */}
-                <Box className="type">
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      {t("UserType")}
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      name="user_account_type_id"
-                      value={newUser.user_account_type_id}
-                      label={t("UserType")}
-                      onChange={handleChange}
-                    >
-                      {filterTypes?.map((el) => (
-                        <MenuItem key={el.id} value={el.id}>
-                          {t(el.name)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
               </form>
             </Modal.Body>
             <Modal.Footer>
@@ -530,7 +542,7 @@ function Users(props) {
               <Button
                 className="btn btn-primary"
                 variant="primary"
-                onClick={handleSubmitAddUsers}
+                onClick={handleSubmitAddGovernorate}
               >
                 {t("Save")} 
               </Button>
@@ -539,7 +551,7 @@ function Users(props) {
           {/* edit modal */}
           <Modal show={editModal} onHide={handleClose} className="Modal">
             <Modal.Header closeButton>
-              <Modal.Title> {t("EditUser")}</Modal.Title>
+              <Modal.Title> {t("EditGovernorate")}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <form action="post">
@@ -555,33 +567,25 @@ function Users(props) {
                   onChange={handleChange}
                 />
                 <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("Phone")}
-                  name="phone"
-                  value={editItem.phone}
-                  onChange={handleChange}
-                />
-                <TextField
+                  autoFocus
                   className="input"
                   id="outlined-basic"
                   variant="outlined"
                   type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={editItem.password}
+                  label={t("ArabicName")}
+                  name="name_ar"
+                  value={editItem.name_ar}
                   onChange={handleChange}
                 />
                 <TextField
+                  autoFocus
                   className="input"
                   id="outlined-basic"
                   variant="outlined"
                   type="text"
-                  label={t("Address")}
-                  name="address"
-                  value={editItem.address}
+                  label={t("Prefix")}
+                  name="prefix"
+                  value={editItem.prefix}
                   onChange={handleChange}
                 />
               </form>
@@ -599,7 +603,7 @@ function Users(props) {
                 variant="primary"
                 onClick={() => handleSubmitEdit(editItem.id)}
               >
-                {t("Save")} 
+                {t("Save")}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -609,7 +613,4 @@ function Users(props) {
   );
 }
 
-export default Users;
-
-//  "country_id":"9a2ddaa8-33a3-46d8-a1f6-8d2da683fb3f",
-//  "governorate_id":"9a11c064-b2fb-40ed-bcf2-a0225ffa0a4f"
+export default Governorate;

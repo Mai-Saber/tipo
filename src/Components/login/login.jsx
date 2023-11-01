@@ -8,8 +8,11 @@ import "toastify-js/src/toastify.css";
 import Modal from "react-modal";
 import "remixicon/fonts/remixicon.css";
 
+
+
 function Login(props) {
   // state
+
   const [account, setAccount] = useState({
     email: "",
     password: "",
@@ -20,8 +23,7 @@ function Login(props) {
     window.onload = () => {
       sessionStorage.removeItem("token");
     };
-  }, []); 
-  
+  }, []);
 
   const handleChange = (e) => {
     const newAccount = {
@@ -41,6 +43,8 @@ function Login(props) {
       .post(url, data)
       .then((response) => {
         sessionStorage.setItem("token", response.data.data.token);
+        sessionStorage.setItem("name", response.data.data.name);
+
         Toastify({
           text: `Hello ${response.data.data.name}`,
           style: {
@@ -48,7 +52,7 @@ function Login(props) {
             color: "white",
           },
         }).showToast();
-        window.location = "/users";
+        window.location = "/countries";
       })
       .catch((error) => {
         console.log("err", error);
@@ -68,6 +72,12 @@ function Login(props) {
     });
   };
 
+  const handleKeyDown = (e) => {
+    const isEnter = e.keyCode == 13;
+    if (isEnter && account.email.trim() && account.password.trim().length > 3) {
+      handleSubmit();
+    }
+  };
   // //////////////////////////////////////
   // return
   return (
@@ -96,6 +106,7 @@ function Login(props) {
             value={account.password}
             onChange={(e) => handleChange(e)}
             title="must be more than 3 characters"
+            onKeyDown={handleKeyDown}
           />
           {account.password.trim() !== "" && account.password.length < 3 && (
             <p className="alert alert-danger">
@@ -108,18 +119,28 @@ function Login(props) {
               Forget Password
             </Link>
             <Modal
-              id="modal"
-              isOpen={modalIsOpen}
-              onRequestClose={() => setIsOpen(false)}
-              contentLabel="Example Modal"
+              // show={addModal}
+              // onHide={handleClose}
+              className="Modal"
             >
-              <h2> Forgot Password </h2>
-              <i class="ri-close-line" onClick={() => setIsOpen(false)}></i>
-
-              <form>
-                <input type="email" />
-                <button> Verify</button>
-              </form>
+              <Modal.Header closeButton>
+                <Modal.Title> Forgot Password </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <form>
+                  <input type="email" />
+                  <button> Verify</button>
+                </form>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  className="close btn btn-danger"
+                  variant="secondary"
+                  // onClick={handleClose}
+                >
+                  close
+                </Button>
+              </Modal.Footer>
             </Modal>
           </div>
           {/* // submit ///////////////////////////////// */}

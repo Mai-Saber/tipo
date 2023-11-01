@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import MenuItem from "@mui/material/MenuItem";
 import UpperTable from "../../common/upperTable/upperTable";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -13,10 +12,12 @@ import "../../common/show modal/showModal.css";
 import { TextField } from "@mui/material";
 import TablePagination from "@mui/material/TablePagination";
 import TablePaginationActions from "../../common/pagination/pagination";
+import { useTranslation } from "react-i18next";
+import Loading from "../../common/loading/loading";
 
 function Countries(props) {
-  const [filterTypes, setFilterTypes] = useState([]);
-  const [currentFilterType, setCurrentFilterType] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
   //modals
@@ -31,6 +32,7 @@ function Countries(props) {
     phone_code: "",
     prefix: "",
   });
+  const { t } = useTranslation();
 
   // pagination
   const [page, setPage] = React.useState(0);
@@ -50,24 +52,22 @@ function Countries(props) {
 
   // general
   useEffect(() => {
+    // loading
+    setTimeout(function () {
+      setLoading(false);
+    }, 3000);
+
     // get countries
     const getCountries = async () => {
       const url = `${base_url}/admin/countries`;
       const res = await axios.get(url);
-      setColumns(Object.keys(res.data.data[1]).slice(1));
       setRow(res.data.data);
+      setColumns(["Name", "Arabic Name", "Phone Code", "Prefix"]);
+     
     };
-    // get filter types
-    const getFilterTypes = async () => {
-      const res = await axios.get(`${base_url}/system-lookups/2`);
-      let arr = [];
-      res.data.data.map((obj) => arr.push(obj.name));
-      setFilterTypes(arr);
-      console.log("arr", filterTypes);
-    };
+
     // call functions
     getCountries();
-    getFilterTypes();
   }, []);
 
   // change any input
@@ -102,10 +102,6 @@ function Countries(props) {
     }
   };
 
-  const handleChangeFilter = (event) => {
-    setCurrentFilterType(event.target.value);
-  };
-
   // delete
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
@@ -133,13 +129,13 @@ function Countries(props) {
   // add
   const handleAdd = () => {
     setAddModal(true);
+    setNewCountry({ name: "", name_ar: "", phone_code: "", prefix: "" });
   };
 
   const handleSubmitAddCountry = async () => {
-    console.log(newCountry);
     await axios
       .post(`${base_url}/admin/country`, newCountry)
-      .then(() => {
+      .then((response) => {
         Toastify({
           text: `country created successfully `,
           style: {
@@ -147,7 +143,7 @@ function Countries(props) {
             color: "white",
           },
         }).showToast();
-        row.unshift(newCountry);
+        row.unshift(response.data.data);
         setNewCountry({ name: "", name_ar: "", phone_code: "", prefix: "" });
         setAddModal(false);
       })
@@ -167,6 +163,7 @@ function Countries(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(`${base_url}/admin/country/${id}`, config);
+    console.log(res.data);
     setItem(res.data.data);
   };
 
@@ -174,14 +171,11 @@ function Countries(props) {
   const handleEdit = async (id) => {
     console.log("edit", id);
     const res = await axios.get(`${base_url}/admin/country/${id}`);
-    console.log(res.data.data);
     setEditItem(res.data.data);
     setEditModal(true);
   };
 
   const handleSubmitEdit = async (id) => {
-    console.log(id);
-    console.log(editItem.id);
     const data = {
       name: editItem.name,
       name_ar: editItem.name_ar,
@@ -200,7 +194,7 @@ function Countries(props) {
         }).showToast();
         for (let i = 0; i < row.length; i++) {
           if (row[i].id === id) {
-            row[i] = data;
+            row[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -225,272 +219,297 @@ function Countries(props) {
   };
   // ////////////////////////////////////////
   return (
-    <div className="countries">
-      {/* header */}
-      <h1 className="header">{props.header}</h1>
+    <>
+      {/* loading spinner*/}
+      {loading && <Loading></Loading>}
 
-      {/* upper table */}
-      <UpperTable
-        handleChangeSearch={handleChangeSearch}
-        handleAdd={handleAdd}
-        filterName="Type"
-        filterValue={currentFilterType}
-        handleChangeFilter={handleChangeFilter}
-      >
-        {filterTypes?.map((el) => (
-          <MenuItem value={el}>{el}</MenuItem>
-        ))}
-      </UpperTable>
+      {/* countries */}
 
-      {/* table */}
-      <Table
-        header="Countries"
-        columns={columns}
-        handleChangeSearch={handleChangeSearch}
-        handleAdd={handleAdd}
-      >
-        <>
-          {/* table children */}
-          {/* pagination  before table map*/}
-          {(rowsPerPage > 0
-            ? row.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            : row
-          )?.map((item) => (
-            <>
-              <tr key={item.id}>
-                <td>{item.name} </td>
-                <td>{item.name_ar}</td>
-                <td>{item.phone_code}</td>
-                <td>{item.flag}</td>
-                <td>{item.prefix}</td>
+      {!loading && (
+        <div className="countries">
+          {/* header */}
+          <h1 className="header">{t("Countries")}</h1>
 
-                <td className="icons">
-                  {/* edit */}
-
-                  <Link
-                    className="edit"
-                    to=""
-                    onClick={() => handleEdit(item.id)}
-                  >
-                    <i className="ri-pencil-line"></i>
-                  </Link>
-
-                  {/* delete */}
-                  <Link
-                    className="delete"
-                    to=""
-                    onClick={() => handleDelete(item.id, item.name)}
-                  >
-                    <i className="ri-delete-bin-2-fill"></i>
-                  </Link>
-                  {/* show */}
-
-                  <Link
-                    className="show"
-                    to=""
-                    onClick={() => handleShow(item.id)}
-                  >
-                    <i class="ri-eye-line"></i>
-                  </Link>
-                </td>
-              </tr>
-            </>
-          ))}
-          {/* pagination */}
-          <TablePagination
-            className="pagination"
-            rowsPerPageOptions={[3, 5, 10, 25, { label: "All", value: -1 }]}
-            colSpan={3}
-            count={row.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            SelectProps={{
-              inputProps: {
-                "aria-label": "rows per page",
-              },
-              native: true,
-            }}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            ActionsComponent={TablePaginationActions}
+          {/* upper table */}
+          <UpperTable
+            handleChangeSearch={handleChangeSearch}
+            handleAdd={handleAdd}
           />
-        </>
-      </Table>
 
-      {/* modals */}
-      {/* show modal */}
-      <Modal className="showModal" show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton className="header">
-          <Modal.Title>{item.name}</Modal.Title>
-        </Modal.Header>
+          {/* table */}
+          {row.length !== 0 ? (
+            <Table columns={columns}>
+              <>
+                {/* table children */}
+                {/* pagination  before table map*/}
+                {(rowsPerPage > 0
+                  ? row.slice(
+                      page * rowsPerPage,
+                      page * rowsPerPage + rowsPerPage
+                    )
+                  : row
+                )?.map((item) => (
+                  <>
+                    <tr key={item.id}>
+                      <td className="name">{item.name} </td>
+                      <td>{item.name_ar}</td>
+                      <td>{item.phone_code}</td>
+                      <td>{item.prefix}</td>
+                      <td>
+                        <Link
+                          className="btn btn-primary"
+                          to="/governorate"
+                          onClick={() => props.handleGovernorate(item.id)}
+                        >
+                          {t("Governorate")}
+                        </Link>
+                      </td>
 
-        <Modal.Body>
-          <p>
-            <span className="label">Name : </span>
-            {item.name}
-          </p>
-          <p>
-            <span className="label">Name_ar :</span> {item.name_ar}{" "}
-          </p>
-          <p>
-            <span className="label">phone code : </span>
-            {item.phone_code}
-          </p>
-          <p>
-            <span className="label">prefix : </span>
-            {item.prefix}
-          </p>
-        </Modal.Body>
+                      <td className="icons">
+                        {/* edit */}
 
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={handleClose}
-            className="close btn btn-danger"
-          >
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* add modal */}
-      <Modal show={addModal} onHide={handleClose} className="addModal">
-        <Modal.Header closeButton>
-          <Modal.Title> Add New Country</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form action="post">
-            <TextField
-              autoFocus
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="text"
-              label="Country Name"
-              name="name"
-              value={newCountry.name}
-              onChange={handleChange}
-            />
-            <TextField
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="text"
-              label="Arabic name"
-              name="name_ar"
-              value={newCountry.name_ar}
-              onChange={handleChange}
-            />
+                        <Link
+                          className="edit"
+                          to=""
+                          onClick={() => handleEdit(item.id)}
+                        >
+                          <i className="ri-pencil-line"></i>
+                        </Link>
 
-            <TextField
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="number"
-              label="Phone code"
-              name="phone_code"
-              value={newCountry.phone_code}
-              onChange={handleChange}
-            />
+                        {/* delete */}
+                        <Link
+                          className="delete"
+                          to=""
+                          onClick={() => handleDelete(item.id, item.name)}
+                        >
+                          <i className="ri-delete-bin-2-fill"></i>
+                        </Link>
+                        {/* show */}
 
-            <TextField
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="text"
-              label="prefix"
-              name="prefix"
-              value={newCountry.prefix}
-              onChange={handleChange}
-            />
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            className="close btn btn-danger"
-            variant="secondary"
-            onClick={handleClose}
-          >
-            Close
-          </Button>
-          <Button
-            className="btn btn-primary"
-            variant="primary"
-            onClick={handleSubmitAddCountry}
-          >
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* edit modal */}
-      <Modal show={editModal} onHide={handleClose} className="addModal">
-        <Modal.Header closeButton>
-          <Modal.Title> Edit Country</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form action="post">
-            <TextField
-              autoFocus
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="text"
-              label="Country Name"
-              name="name"
-              value={editItem.name}
-              onChange={handleChange}
-            />
-            <TextField
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="text"
-              label="Arabic name"
-              name="name_ar"
-              value={editItem.name_ar}
-              onChange={handleChange}
-            />
+                        <Link
+                          className="show"
+                          to=""
+                          onClick={() => handleShow(item.id)}
+                        >
+                          <i className="ri-eye-line"></i>
+                        </Link>
+                      </td>
+                    </tr>
+                  </>
+                ))}
+                {/* pagination */}
+                <TablePagination
+                  className="pagination"
+                  rowsPerPageOptions={[
+                    3,
+                    5,
+                    10,
+                    25,
+                    { label: "All", value: -1 },
+                  ]}
+                  colSpan={3}
+                  count={row.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  SelectProps={{
+                    inputProps: {
+                      "aria-label": "rows per page",
+                    },
+                    native: true,
+                  }}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  ActionsComponent={TablePaginationActions}
+                />
+              </>
+            </Table>
+          ) : (
+            <div className="noData">
+              <h3>Oops,there is no country, let's create one </h3>
+              <img src="../../../../assets/no-data.avif" alt="no data" />
+            </div>
+          )}
 
-            <TextField
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="number"
-              label="Phone code"
-              name="phone_code"
-              value={editItem.phone_code}
-              onChange={handleChange}
-            />
+          {/* modals */}
+          {/* show modal */}
+          <Modal show={showModal} onHide={handleClose} className="showModal">
+            <Modal.Header closeButton className="header">
+              <Modal.Title>{item.name}</Modal.Title>
+            </Modal.Header>
 
-            <TextField
-              className="input"
-              id="outlined-basic"
-              variant="outlined"
-              type="text"
-              label="prefix"
-              name="prefix"
-              value={editItem.prefix}
-              onChange={handleChange}
-            />
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            className="close btn btn-danger"
-            variant="secondary"
-            onClick={handleClose}
-          >
-            Close
-          </Button>
-          <Button
-            className="btn btn-primary"
-            variant="primary"
-            onClick={() => handleSubmitEdit(editItem.id)}
-          >
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+            <Modal.Body>
+              <p>
+                <span className="label">{t("Name")} : </span>
+                {item.name}
+              </p>
+              <p>
+                <span className="label">{t("ArabicName")} :</span> {item.name_ar}
+              </p>
+              <p>
+                <span className="label">{t("PhoneCode")} : </span>
+                {item.phone_code}
+              </p>
+              <p>
+                <span className="label">{t("Prefix")} : </span>
+                {item.prefix}
+              </p>
+              <p>
+                <span className="label">{t("Id")} : </span>
+                {item.id}
+              </p>
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={handleClose}
+                className="close btn btn-danger"
+              >
+                {t("Close")}
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          {/* add modal */}
+          <Modal show={addModal} onHide={handleClose} className="Modal">
+            <Modal.Header closeButton>
+              <Modal.Title> {t("AddNewCountry")}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <form action="post">
+                <TextField
+                  autoFocus
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("Name")}
+                  name="name"
+                  value={newCountry.name}
+                  onChange={handleChange}
+                />
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("ArabicName")}
+                  name="name_ar"
+                  value={newCountry.name_ar}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="number"
+                  label={t("PhoneCode")}
+                  name="phone_code"
+                  value={newCountry.phone_code}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("Prefix")}
+                  name="prefix"
+                  value={newCountry.prefix}
+                  onChange={handleChange}
+                />
+              </form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                className="close btn btn-danger"
+                variant="secondary"
+                onClick={handleClose}
+              >
+                {t("Close")}
+              </Button>
+              <Button
+                className="btn btn-primary"
+                variant="primary"
+                onClick={handleSubmitAddCountry}
+              >
+                {t("Save")} 
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          {/* edit modal */}
+          <Modal show={editModal} onHide={handleClose} className="Modal">
+            <Modal.Header closeButton>
+              <Modal.Title> {t("EditCountry")}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <form action="post">
+                <TextField
+                  autoFocus
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("Name")}
+                  name="name"
+                  value={editItem.name}
+                  onChange={handleChange}
+                />
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("ArabicName")}
+                  name="name_ar"
+                  value={editItem.name_ar}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="number"
+                  label={t("PhoneCode")}
+                  name="phone_code"
+                  value={editItem.phone_code}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  className="input"
+                  id="outlined-basic"
+                  variant="outlined"
+                  type="text"
+                  label={t("Prefix")}
+                  name="prefix"
+                  value={editItem.prefix}
+                  onChange={handleChange}
+                />
+              </form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                className="close btn btn-danger"
+                variant="secondary"
+                onClick={handleClose}
+              >
+                {t("Close")}
+              </Button>
+              <Button
+                className="btn btn-primary"
+                variant="primary"
+                onClick={() => handleSubmitEdit(editItem.id)}
+              >
+               {t("Save")} 
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
+    </>
   );
 }
 

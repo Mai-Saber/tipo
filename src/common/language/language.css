@@ -1,0 +1,33 @@
+/* nav */
+
+.appInArabic .navBar {
+    background: #000046;
+    background: -webkit-linear-gradient(to left, #1cb5e0, #000046);
+    background: linear-gradient(to left, #1cb5e0, #000046);
+}
+
+.appInArabic .navBar img {
+    position: relative;
+    right: -80px;
+}
+
+.appInArabic .navBar .items {
+    position: relative;
+}
+
+.appInArabic .navBar .welcome {
+    position: absolute;
+    right: 60px;
+    top: 5px;
+}
+
+.appInArabic .navBar select {
+    position: relative;
+    right: 0px;
+    margin-left: 20px;
+}
+
+/* upper Table */
+.appInArabic .upperTable {
+    margin-right: 15%;
+}

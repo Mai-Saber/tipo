@@ -25,26 +25,28 @@
     background-color: rgba(166, 163, 163, 0.202);
 }
 
-.commonTable table .icons a {
+ .icons a {
     text-decoration: none;
     padding-right: 10px;
 }
 
-.commonTable table .icons .edit {
+.icons .edit {
     color: green;
 
 }
 
-.commonTable table .icons .delete {
+ .icons .delete {
     color: red;
 
 }
 
-.commonTable table .icons .show {
+ .icons .show {
     color: blue;
 
 }
-
+.name{
+    text-transform: capitalize;
+}
 /* ////////// */
 @media (min-width:100px) and (max-width:900px) {
     .commonTable {
