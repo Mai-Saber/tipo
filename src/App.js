@@ -21,6 +21,7 @@ import i18n from "./common/language/i18n";
 import Branches from "./Components/companies/Branches/branches";
 import Governorate from "./Components/Governorates/Governorates";
 import Categories from './Components/companies/categories/categories';
+import { PrimeReactProvider } from "primereact/api";
 // /////////////////////////////////////////
 const token = sessionStorage.getItem("token");
 
@@ -111,51 +112,55 @@ function App() {
                 <SideBar id="side" handleSideBar={handleSideBar} />
 
                 <main className="main">
-                  <Routes>
-                    <Route
-                      path="/countries"
-                      element={
-                        <Countries handleGovernorate={handleGovernorate} />
-                      }
-                    />
-                    , ,
-                    <Route
-                      path="/governorate"
-                      element={<Governorate countryInApp={countryId} />}
-                    />
-                    ,
-                    <Route
-                      path="/companies"
-                      element={<Companies
-                        handleBranches={handleBranches}
-                        handleCategories={handleCategories}
-                      />}
-                    />
-                    ,
-                    <Route
-                      path="/companies/branches"
-                      element={
-                        <Branches
-                          companyIDInApp={companyID}
-                          clientIdInApp={clientId}
-                        />
-                      }
-                    />
-                    ,
-                    <Route
-                      path="/companies/categories"
-                      element={
-                        <Categories
-                          companyIDInApp={companyID}
-                          clientIdInApp={clientId}
-                        />
-                      }
-                    />
-                    ,
-                    <Route path="/users" element={<User />} />,
-                    <Route path="/clients" element={<Clients />} />,
-                    <Route path="*" element={<NotFound />} />,
-                  </Routes>
+                  <PrimeReactProvider>
+                    <Routes>
+                      <Route
+                        path="/countries"
+                        element={
+                          <Countries handleGovernorate={handleGovernorate} />
+                        }
+                      />
+                      , ,
+                      <Route
+                        path="/governorate"
+                        element={<Governorate countryInApp={countryId} />}
+                      />
+                      ,
+                      <Route
+                        path="/companies"
+                        element={
+                          <Companies
+                            handleBranches={handleBranches}
+                            handleCategories={handleCategories}
+                          />
+                        }
+                      />
+                      ,
+                      <Route
+                        path="/companies/branches"
+                        element={
+                          <Branches
+                            companyIDInApp={companyID}
+                            clientIdInApp={clientId}
+                          />
+                        }
+                      />
+                      ,
+                      <Route
+                        path="/companies/categories"
+                        element={
+                          <Categories
+                            companyIDInApp={companyID}
+                            clientIdInApp={clientId}
+                          />
+                        }
+                      />
+                      ,
+                      <Route path="/users" element={<User />} />,
+                      <Route path="/clients" element={<Clients />} />,
+                      <Route path="*" element={<NotFound />} />,
+                    </Routes>
+                  </PrimeReactProvider>
                 </main>
               </div>
             </div>

@@ -23,11 +23,43 @@ import TablePaginationActions from "../../../common/pagination/pagination";
 import { Col, Row } from "react-bootstrap";
 import "./categories.css";
 import { ReactTree } from "@naisutech/react-tree";
+import { Tree } from "primereact/tree";
+
+import { TreeTable } from "primereact/treetable";
+import { Column } from "primereact/column";
 
 function Categories(props) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedKey, setSelectedKey] = useState("");
+  const [nodes, setNodes] = useState([]);
 
+  const [data, setData] = useState([
+    {
+      label: "Parent",
+      id: "1",
+      parentId: null,
+      children: [
+        {
+          label: "Child1",
+          id: "2",
+          parentId: "1",
+        },
+      ],
+    },
+    {
+      label: "mai",
+      id: "33",
+      parentId: null,
+      children: [
+        {
+          label: "maiiiiiiiiiii",
+          id: "44",
+          parentId: "33",
+        },
+      ],
+    },
+  ]);
+
+  const [loading, setLoading] = useState(true);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
   const [parentCategory, setParentCategory] = useState([]);
@@ -97,49 +129,56 @@ function Categories(props) {
     //     arr.filter((el) => el.name === "laptop")
     //   );
     // };
-
     const getCategories = async () => {
-      // parent category
-      const parentRes = await axios.get(
-        `${base_url}/admin/company/categories/${companyID}`
-      );
-      // تظبيط شكل الاوبجكت
-      // parent categories
-      for (let i = 0; i < parentRes.data.data.length; i++) {
-        const obj = parentRes.data.data[i];
-        let newParentObj = {
-          parentId: obj.parent_category ? obj.parent_category.id : null,
-          label: obj.name,
-          id: obj.id,
-        };
-        if (data.length !== parentRes.data.data.length) {
-          data.push(newParentObj);
-        } else {
-          break;
-        }
-      }
-
-      // get children
-      const children = [];
-      for (let i = 0; i < data.length; i++) {
-        const ele = data[i];
-        // child
-        const childRes = await axios.get(
-          `${base_url}/admin/company/categories/by-category/${ele.id}`
+      try {
+        // parent category
+        const parentRes = await axios.get(
+          `${base_url}/admin/company/categories/${companyID}`
         );
-        childRes.data.data.map((obj) => children.push(obj));
-      }
-      // تظبيط الاطفال
-      for (let i = 0; i < children.length; i++) {
-        const obj = children[i];
-        let newObj = {
-          label: obj.name,
-          id: obj.id,
-          parentId: obj.parent_category ? obj.parent_category.id : null,
-        };
-        if (!data.find((item) => item.label == obj.name)) {
-          data.push(newObj);
+        // تظبيط شكل الاوبجكت
+        // parent categories
+        for (let i = 0; i < parentRes.data.data.length; i++) {
+          const obj = parentRes.data.data[i];
+          let newParentObj = {
+            parentId: obj.parent_category ? obj.parent_category.id : null,
+            label: obj.name,
+            id: obj.id,
+            ...obj,
+          };
+          if (nodes.length !== parentRes.data.data.length) {
+            nodes.push(newParentObj);
+          } else {
+            break;
+          }
         }
+
+        // get children
+        const children = [];
+        for (let i = 0; i < nodes.length; i++) {
+          const ele = nodes[i];
+          // child
+          const childRes = await axios.get(
+            `${base_url}/admin/company/categories/by-category/${ele.id}`
+          );
+          childRes.data.data.map((obj) => children.push(obj));
+        }
+        // تظبيط الاطفال
+        for (let i = 0; i < children.length; i++) {
+          const obj = children[i];
+          let newObj = {
+            label: obj.name,
+            id: obj.id,
+            parentId: obj.parent_category ? obj.parent_category.id : null,
+            ...obj,
+          };
+          if (!nodes.find((item) => item.label == obj.name)) {
+            nodes.push(newObj);
+          }
+        }
+
+        console.log("d", nodes);
+      } catch (err) {
+        console.log("err", err);
       }
     };
 
@@ -338,6 +377,41 @@ function Categories(props) {
     setEditModal(false);
   };
   // ////////////////////////////////////////
+  const actionTemplate = () => {
+    return (
+      <div className="icons flex flex-wrap gap-2">
+        {/* edit */}
+
+        <Link
+          className="edit"
+          to=""
+          // onClick={() => handleEdit(item.id)}
+        >
+          <i className="ri-pencil-line"></i>
+        </Link>
+
+        {/* delete */}
+        <Link
+          className="delete"
+          to=""
+          // onClick={() => handleDelete(item.id, item.name)}
+        >
+          <i className="ri-delete-bin-2-fill"></i>
+        </Link>
+        {/* show */}
+
+        <Link
+          className="show"
+          to=""
+          // onClick={() => handleShow(item.id)}
+        >
+          <i className="ri-eye-line"></i>
+        </Link>
+      </div>
+    );
+  };
+
+  // ///////////////
   return (
     <>
       {/* loading spinner*/}
@@ -348,16 +422,21 @@ function Categories(props) {
         <div className="categories">
           {/* header */}
           <h1 className="header">{t("Categories")}</h1>
-
           {/* upper table */}
           <UpperTable
             handleChangeSearch={handleChangeSearch}
             handleAdd={() => handleAdd()}
           />
-          {/* tree */}
-          <ReactTree nodes={data} />
+          {/*tree*/}
+          <div className="card flex justify-content-center">
+            <Tree
+              value={data}
+              onClick={(e) => console.log("click",e.target)}
+              className="w-full md:w-30rem"
+            />
+          </div>
 
-          {/* modals */}
+          {/* modals*/}
           {/* show modal */}
           <Modal className="showModal" show={showModal} onHide={handleClose}>
             <Modal.Header closeButton className="header">
