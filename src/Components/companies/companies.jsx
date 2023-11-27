@@ -10,8 +10,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "../../common/show modal/showModal.css";
 import { TextField } from "@mui/material";
-import TablePagination from "@mui/material/TablePagination";
-import TablePaginationActions from "../../common/pagination/pagination";
 import { useTranslation } from "react-i18next";
 import "./companies.css";
 import "../../common/upperTable/upperTable.css";
@@ -21,14 +19,15 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Loading from "../../common/loading/loading";
+import { Paginator } from "primereact/paginator";
 
 function Companies(props) {
   const [loading, setLoading] = useState(true);
   const [filterClients, setFilterClients] = useState([]);
-  const [currentFilterClientId, setCurrentFilterClientId] = useState("");
-  const [searchValue, setSearchValue] = useState("");
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
+  const [totalRowLength, setTotalRowLength] = useState("");
+
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
@@ -40,22 +39,6 @@ function Companies(props) {
     client_id: "",
   });
   const { t } = useTranslation();
-
-  // pagination
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(3);
-
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - row.length) : 0;
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   // general
   useEffect(() => {
@@ -70,6 +53,7 @@ function Companies(props) {
       const res = await axios.get(url);
       setColumns(["Name", "Id", ""]);
       setRow(res.data.data);
+      setTotalRowLength(res.data.meta?.total);
     };
 
     // get filter countries
@@ -78,24 +62,9 @@ function Companies(props) {
       setFilterClients(res.data.data);
     };
 
-    // setRowBasedOnFilter
-    const setRowBasedOnFilter = async () => {
-      if (currentFilterClientId) {
-        await axios
-          .get(`${base_url}/admin/clients/${currentFilterClientId}`)
-          .then((res) => {
-            setRow(res.data.data);
-          })
-          .catch((err) => {
-            console.log("err", err);
-          });
-      }
-    };
-
     // call functions
     getCompanies();
     filterClients();
-    setRowBasedOnFilter();
   }, []);
 
   // change any input
@@ -114,68 +83,50 @@ function Companies(props) {
   };
 
   // search & filter
-  const handleChangeSearch = async (e) => {
-    setSearchValue(e.target.value);
+  // search & filter & pagination
 
-    // if input has value >> set row
-    if (e.target.value.trim()) {
-      const res = await axios.get(
-        `${base_url}/admin/companies/search?query_string=${e.target.value}`
-      );
-      setRow(res.data.data);
-    }
+  const [rows, setRows] = useState(10);
+  const [page, setPage] = useState(0);
+  const [searchRequestControls, setSearchRequestControls] = useState({
+    queryString: "",
+    filterType: "",
+    pageNumber: "",
+    perPage: "",
+  });
 
-    // if input empty >> reset row
-    if (e.target.value === "") {
-      const url = `${base_url}/admin/companies/search`;
-      const res = await axios.get(url);
-      setRow(res.data.data);
-    }
+  const onPageChange = (e) => {
+    setRows(e.rows);
+    setPage(e.page + 1);
 
-    // if search & filter have value
-    if (e.target.value.trim() && currentFilterClientId.trim()) {
-      console.log("qs", e.target.value);
-      console.log("ci", currentFilterClientId);
-
-      await axios
-        .get(
-          `${base_url}/admin/companies/search?client_id=${currentFilterClientId}&query_string=${e.target.value}`
-        )
-        .then((res) => {
-          setRow(res.data.data);
-          console.log("rrr", res);
-        });
-    }
+    handleSearchReq(e, {
+      perPage: e.rows,
+      pageNumber: e.page + 1,
+    });
   };
 
-  const handleChangeFilter = async (e) => {
-    setCurrentFilterClientId(e.target.value);
+  const handleSearchReq = async (
+    e,
+    { queryString, filterType, perPage, pageNumber }
+  ) => {
+    try {
+      setSearchRequestControls({
+        queryString: queryString,
+        filterType: filterType,
+        pageNumber: pageNumber,
+        perPage: perPage,
+      });
 
-    // handle filter value
-    if (e.target.value === "All") {
-      const res = await axios.get(`${base_url}/admin/companies`);
+      const res = await axios.get(
+        `${base_url}/admin/companies/search?
+          per_page=${Number(perPage) || ""}
+          &query_string=${queryString || ""}
+          &user_account_type_id=${filterType || ""}
+          &page=${pageNumber || ""}
+    `
+      );
       setRow(res.data.data);
-    } else {
-      await axios
-        .get(`${base_url}/admin/client-companies/${e.target.value}`)
-        .then((res) => {
-          setRow(res.data.data);
-        })
-        .catch((err) => {
-          console.log("err", err);
-        });
-    }
-
-    // if search & filter have value
-    if (searchValue.trim() && e.target.value.trim()) {
-      await axios
-        .get(
-          `${base_url}/admin/companies/search?client_id=${e.target.value}&query_string=${searchValue}`
-        )
-        .then((res) => {
-          setRow(res.data.data);
-          console.log("rrr", res);
-        });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -312,7 +263,11 @@ function Companies(props) {
                 <input
                   placeholder={t("SearchByCompanyName")}
                   type="search"
-                  onChange={handleChangeSearch}
+                  name="queryString"
+                  value={searchRequestControls.queryString}
+                  onChange={(e) =>
+                    handleSearchReq(e, { queryString: e.target.value })
+                  }
                   className="inputSearch"
                 />
               </Col>
@@ -326,9 +281,12 @@ function Companies(props) {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={currentFilterClientId}
                       label={t("SelectCLient")}
-                      onChange={handleChangeFilter}
+                      name="filterType"
+                      value={searchRequestControls.filterType}
+                      onChange={(e) =>
+                        handleSearchReq(e, { filterType: e.target.value })
+                      }
                     >
                       <MenuItem value="All">All</MenuItem>
                       {filterClients?.map((el) => (
@@ -355,17 +313,22 @@ function Companies(props) {
               <>
                 {/* table children */}
                 {/* pagination  before table map*/}
-                {(rowsPerPage > 0
-                  ? row.slice(
-                      page * rowsPerPage,
-                      page * rowsPerPage + rowsPerPage
-                    )
-                  : row
-                )?.map((item) => (
+                {row?.map((item) => (
                   <>
-                    <tr key={item.id}>
+                    <tr key={(item.id)}>
                       <td className="name">{item.name} </td>
-                      <td>{item.id}</td>
+                      <td>{(item.id).slice(0,8)}...</td>
+                      <td>
+                        <Link
+                          to="/companies/variants"
+                          className="btn btn-primary"
+                          onClick={() =>
+                            props.handleVariant(item.id, item.client_id)
+                          }
+                        >
+                          {t("Variants")}
+                        </Link>
+                      </td>
                       <td>
                         <Link
                           to="/companies/branches"
@@ -422,29 +385,15 @@ function Companies(props) {
                   </>
                 ))}
                 {/* pagination */}
-                <TablePagination
-                  className="pagination"
-                  rowsPerPageOptions={[
-                    3,
-                    5,
-                    10,
-                    25,
-                    { label: "All", value: -1 },
-                  ]}
-                  colSpan={3}
-                  count={row.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  SelectProps={{
-                    inputProps: {
-                      "aria-label": "rows per page",
-                    },
-                    native: true,
-                  }}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  ActionsComponent={TablePaginationActions}
-                />
+                <div className="card">
+                  <Paginator
+                    first={page}
+                    rows={rows}
+                    totalRecords={totalRowLength}
+                    rowsPerPageOptions={[3, 5, 10, 20, 30]}
+                    onPageChange={onPageChange}
+                  />
+                </div>
               </>
             </Table>
           ) : (

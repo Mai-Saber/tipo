@@ -5,6 +5,7 @@
   font-family: 'Nerko One', cursive;
   font-family: 'Pixelify Sans', sans-serif;
   font-family: 'Roboto Slab', serif;
+  position: relative;
 }
 
 :root {
@@ -72,23 +73,37 @@
 }
 
 /* pagination */
-.pagination {
-  width: fit-content;
-  margin-top: 10px;
+.card {
+  border: transparent !important;
   position: relative;
-  /* left: 6px; */
-  border-bottom: transparent !important;
 }
 
-.pagination .MuiInputBase-root {
+.card .p-paginator {
   position: relative;
-  top: -5px;
+  left: 50%;
+
+}
+
+.card .p-paginator button {
+  color: var(--babyBlue-color) !important;
+  background-color: var(--grey-color) !important;
+}
+
+.card .p-paginator button:disabled {
+  color: rgba(128, 128, 128, 0.178) !important;
+
+}
+
+.card .p-paginator button:active {
+  border: 1px solid var(--babyBlue-color) !important;
+
 }
 
 @media (min-width: 100px) and (max-width: 1190px) {
-  .pagination {
+  .card .p-paginator {
     position: unset;
-    width: 100vw;
+    width: 90vw !important;
+    height: fit-content;
     left: 0 !important;
   }
 }

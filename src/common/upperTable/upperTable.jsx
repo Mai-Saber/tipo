@@ -57,8 +57,11 @@ function UpperTable(props) {
           <input
             placeholder={t("SearchByName")}
             type="search"
-            onChange={props.handleChangeSearch}
             className="inputSearch"
+            name={props.inputName}
+            value={props.inputValue}
+            onChange={props.handleChangeSearch}
+
           />
         </Col>
 

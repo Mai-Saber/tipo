@@ -19,9 +19,14 @@ import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import i18n from "./common/language/i18n";
 import Branches from "./Components/companies/Branches/branches";
+import Variants from "./Components/companies/variants/variants";
 import Governorate from "./Components/Governorates/Governorates";
-import Categories from './Components/companies/categories/categories';
+import Categories from "./Components/companies/categories/categories";
 import { PrimeReactProvider } from "primereact/api";
+import "primereact/resources/themes/lara-light-indigo/theme.css"; // theme
+import "primeicons/primeicons.css";
+import "primereact/resources/primereact.css";
+
 // /////////////////////////////////////////
 const token = sessionStorage.getItem("token");
 
@@ -72,7 +77,10 @@ function App() {
   useEffect(() => {
     const dir = i18n.dir(i18n.lng);
     document.getElementsByTagName("html")[0].setAttribute("dir", dir);
-    console.log("atr", document.getElementsByTagName("html")[0].attributes[1]==="rtl");
+    console.log(
+      "atr",
+      document.getElementsByTagName("html")[0].attributes[1] === "rtl"
+    );
   }, [i18n, i18n.lng]);
 
   const handleGovernorate = (id) => {
@@ -80,6 +88,10 @@ function App() {
   };
 
   const handleBranches = (id, clientId) => {
+    setCompanyId(id);
+    setClientId(clientId);
+  };
+  const handleVariant = (id, clientId) => {
     setCompanyId(id);
     setClientId(clientId);
   };
@@ -131,7 +143,18 @@ function App() {
                         element={
                           <Companies
                             handleBranches={handleBranches}
+                            handleVariant={handleVariant}
                             handleCategories={handleCategories}
+                          />
+                        }
+                      />
+                      ,
+                      <Route
+                        path="/companies/variants"
+                        element={
+                          <Variants
+                            companyIDInApp={companyID}
+                            clientIdInApp={clientId}
                           />
                         }
                       />

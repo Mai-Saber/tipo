@@ -11,15 +11,16 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "../../common/show modal/showModal.css";
 import { TextField } from "@mui/material";
-import TablePagination from "@mui/material/TablePagination";
-import TablePaginationActions from "../../common/pagination/pagination";
 import { useTranslation } from "react-i18next";
 import Loading from "../../common/loading/loading";
+import { Paginator } from "primereact/paginator";
 
 function Clients(props) {
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
+  const [totalRowLength, setTotalRowLength] = useState("");
+
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
@@ -40,22 +41,6 @@ function Clients(props) {
   });
   const { t } = useTranslation();
 
-  // pagination
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(3);
-
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - row.length) : 0;
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
   // general
   useEffect(() => {
     // loading
@@ -69,6 +54,7 @@ function Clients(props) {
       const res = await axios.get(url);
       setColumns(["Name", "Email", "Phone"]);
       setRow(res.data.data);
+      setTotalRowLength(res.data.meta?.total);
     };
     // call functions
     getClients();
@@ -90,19 +76,50 @@ function Clients(props) {
   };
 
   // search & filter
-  const handleChangeSearch = async (e) => {
-    const allData = [row];
-    console.log(allData);
-    if (e.target.value.trim()) {
+  // search & filter & pagination
+
+  const [rows, setRows] = useState(10);
+  const [page, setPage] = useState(0);
+  const [searchRequestControls, setSearchRequestControls] = useState({
+    queryString: "",
+    filterType: "",
+    pageNumber: "",
+    perPage: "",
+  });
+
+  const onPageChange = (e) => {
+    setRows(e.rows);
+    setPage(e.page + 1);
+
+    handleSearchReq(e, {
+      perPage: e.rows,
+      pageNumber: e.page + 1,
+    });
+  };
+
+  const handleSearchReq = async (
+    e,
+    { queryString, filterType, perPage, pageNumber }
+  ) => {
+    try {
+      setSearchRequestControls({
+        queryString: queryString,
+        filterType: filterType,
+        pageNumber: pageNumber,
+        perPage: perPage,
+      });
+
       const res = await axios.get(
-        `${base_url}/admin/clients/search?query_string= ${e.target.value}`
+        `${base_url}/admin/clients/search?
+          per_page=${Number(perPage) || ""}
+          &query_string=${queryString || ""}
+          &user_account_type_id=${filterType || ""}
+          &page=${pageNumber || ""}
+    `
       );
       setRow(res.data.data);
-    }
-    if (e.target.value === "") {
-      const url = `${base_url}/admin/clients`;
-      const res = await axios.get(url);
-      setRow(res.data.data);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -257,8 +274,12 @@ function Clients(props) {
 
           {/* upper table */}
           <UpperTable
-            handleChangeSearch={handleChangeSearch}
             handleAdd={handleAdd}
+            inputName="queryString"
+            inputValue={searchRequestControls.queryString}
+            handleChangeSearch={(e) =>
+              handleSearchReq(e, { queryString: e.target.value })
+            }
           />
 
           {/* table */}
@@ -267,13 +288,7 @@ function Clients(props) {
               <>
                 {/* table children */}
                 {/* pagination  before table map*/}
-                {(rowsPerPage > 0
-                  ? row.slice(
-                      page * rowsPerPage,
-                      page * rowsPerPage + rowsPerPage
-                    )
-                  : row
-                )?.map((item) => (
+                {row?.map((item) => (
                   <>
                     <tr key={item.id}>
                       <td className="name">{item.name} </td>
@@ -313,29 +328,15 @@ function Clients(props) {
                   </>
                 ))}
                 {/* pagination */}
-                <TablePagination
-                  className="pagination"
-                  rowsPerPageOptions={[
-                    3,
-                    5,
-                    10,
-                    25,
-                    { label: "All", value: -1 },
-                  ]}
-                  colSpan={3}
-                  count={row.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  SelectProps={{
-                    inputProps: {
-                      "aria-label": "rows per page",
-                    },
-                    native: true,
-                  }}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  ActionsComponent={TablePaginationActions}
-                />
+                <div className="card">
+                  <Paginator
+                    first={page}
+                    rows={rows}
+                    totalRecords={totalRowLength}
+                    rowsPerPageOptions={[5, 10, 20, 30]}
+                    onPageChange={onPageChange}
+                  />
+                </div>
               </>
             </Table>
           ) : (
@@ -499,7 +500,6 @@ function Clients(props) {
                 onClick={handleSubmitAddClient}
               >
                 {t("Save")}
-
               </Button>
             </Modal.Footer>
           </Modal>

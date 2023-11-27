@@ -28,6 +28,7 @@ i18n
           Branches: "Branches",
           Categories: "Categories",
           Governorate: "Governorate",
+          Variants: "Variants",
           // columns title
           Name: "Name",
           Phone: "Phone",
@@ -58,6 +59,7 @@ i18n
           EditCompany: "Edit Company",
           SearchByCompanyName: "Search By Company Name",
           SelectCLient: " Select CLient",
+
           // branches modals
           CompanyDetails: "Company Details",
           CompanyId: "Company Id",
@@ -82,6 +84,9 @@ i18n
           Root: "Root",
           Admin: "Admin",
           All: "All",
+          //Variant
+          AddNewVariant: "Add New Variant",
+          EditVariant: "Edit Variant",
         },
       },
       ar: {
@@ -99,6 +104,8 @@ i18n
           Branches: "الفروع",
           Categories: "الاقسام",
           Governorate: "المحافظات",
+          Variants: "الاصناف",
+
           // columns title
           Product: "المنتجات",
           submit: "موافقة",
@@ -155,6 +162,9 @@ i18n
           Root: "روت",
           Admin: "ادمن",
           All: "الجميع",
+          //Variant
+          AddNewVariant: "اضافة صنف جديد",
+          EditVariant:" تعديل صنف"
         },
       },
     },

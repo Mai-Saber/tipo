@@ -10,8 +10,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "../../common/show modal/showModal.css";
 import { TextField } from "@mui/material";
-import TablePagination from "@mui/material/TablePagination";
-import TablePaginationActions from "../../common/pagination/pagination";
 import { useTranslation } from "react-i18next";
 import { Col, Row } from "react-bootstrap";
 import Box from "@mui/material/Box";
@@ -20,13 +18,15 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import "../../common/upperTable/upperTable.css";
 import Loading from "../../common/loading/loading";
+import { Paginator } from "primereact/paginator";
 
 function Users(props) {
   const [loading, setLoading] = useState(true);
   const [filterTypes, setFilterTypes] = useState([]);
-  const [currentFilterType, setCurrentFilterType] = useState("");
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
+  const [totalRowLength, setTotalRowLength] = useState("");
+
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
@@ -43,22 +43,6 @@ function Users(props) {
   });
   const { t } = useTranslation();
 
-  // pagination
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(3);
-
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - row.length) : 0;
-
-  const handleChangePage = (newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
   // general
   useEffect(() => {
     // loading
@@ -72,6 +56,7 @@ function Users(props) {
       const res = await axios.get(url);
       setColumns(["Name", "Email", "Phone"]);
       setRow(res.data.data);
+      setTotalRowLength(res.data.meta?.total);
     };
     // get filter types
 
@@ -79,7 +64,7 @@ function Users(props) {
       const res = await axios.get(`${base_url}/system-lookups/1`);
       let arr = [];
       res.data.data.map((obj) => {
-        if (obj.name === "Root" || obj.name === "Admin") {
+        if (obj.prefix === "ROOT" || obj.prefix === "ADMIN") {
           arr.push(obj);
         }
       });
@@ -97,41 +82,59 @@ function Users(props) {
       [e.target.name]: e.target.value,
     };
     setNewUser(newData);
-
+    // ////////////////////
     const newItem = {
       ...editItem,
       [e.target.name]: e.target.value,
     };
     setEditItem(newItem);
+    // ///////////////////
   };
 
-  // search & filter
-  const handleChangeSearch = async (e) => {
-    const allData = [row];
-    console.log(allData);
-    if (e.target.value.trim()) {
+  // search & filter & pagination
+
+  const [rows, setRows] = useState(10);
+  const [page, setPage] = useState(0);
+  const [searchRequestControls, setSearchRequestControls] = useState({
+    queryString: "",
+    filterType: "",
+    pageNumber: "",
+    perPage: "",
+  });
+
+  const onPageChange = (e) => {
+    setRows(e.rows);
+    setPage(e.page + 1);
+
+    handleSearchReq(e, {
+      perPage: e.rows,
+      pageNumber: e.page + 1,
+    });
+  };
+
+  const handleSearchReq = async (
+    e,
+    { queryString, filterType, perPage, pageNumber }
+  ) => {
+    try {
+      setSearchRequestControls({
+        queryString: queryString,
+        filterType: filterType,
+        pageNumber: pageNumber,
+        perPage: perPage,
+      });
+
       const res = await axios.get(
-        `${base_url}/admin/users/search?query_string= ${e.target.value}`
+        `${base_url}/admin/users/search?
+          per_page=${Number(perPage) || ""}
+          &query_string=${queryString || ""}
+          &user_account_type_id=${filterType || ""}
+          &page=${pageNumber || ""}
+    `
       );
       setRow(res.data.data);
-    }
-    if (e.target.value === "") {
-      const url = `${base_url}/admin/users`;
-      const res = await axios.get(url);
-      setRow(res.data.data);
-    }
-  };
-
-  const handleChangeFilter = async (event) => {
-    setCurrentFilterType(event.target.value);
-    // set row with target value description
-    const res = await axios.get(`${base_url}/admin/users`);
-    setRow(res.data.data);
-
-    if (event.target.value !== "all") {
-      setRow(
-        res.data.data.filter((el) => el.account_type.id === event.target.value)
-      );
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -277,7 +280,11 @@ function Users(props) {
                 <input
                   placeholder={t("SearchByName")}
                   type="Search"
-                  onChange={handleChangeSearch}
+                  name="queryString"
+                  value={searchRequestControls.queryString}
+                  onChange={(e) =>
+                    handleSearchReq(e, { queryString: e.target.value })
+                  }
                   className="inputSearch"
                 />
               </Col>
@@ -291,11 +298,14 @@ function Users(props) {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={currentFilterType}
                       label={t("UserType")}
-                      onChange={handleChangeFilter}
+                      name="filterType"
+                      value={searchRequestControls.filterType}
+                      onChange={(e) =>
+                        handleSearchReq(e, { filterType: e.target.value })
+                      }
                     >
-                      <MenuItem value="all">{t("All")}</MenuItem>
+                      <MenuItem value="">{t("All")}</MenuItem>
                       {filterTypes?.map((el) => (
                         <MenuItem key={el.id} value={el.id}>
                           {t(el.name)}
@@ -319,14 +329,8 @@ function Users(props) {
             <Table columns={columns}>
               <>
                 {/* table children */}
-                {/* pagination  before table map*/}
-                {(rowsPerPage > 0
-                  ? row.slice(
-                      page * rowsPerPage,
-                      page * rowsPerPage + rowsPerPage
-                    )
-                  : row
-                )?.map((item) => (
+
+                {row?.map((item, i) => (
                   <>
                     <tr key={item.id}>
                       <td className="name">{item.name} </td>
@@ -365,30 +369,18 @@ function Users(props) {
                     </tr>
                   </>
                 ))}
+
                 {/* pagination */}
-                <TablePagination
-                  className="pagination"
-                  rowsPerPageOptions={[
-                    3,
-                    5,
-                    10,
-                    25,
-                    { label: "All", value: -1 },
-                  ]}
-                  colSpan={3}
-                  count={row.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  SelectProps={{
-                    inputProps: {
-                      "aria-label": "rows per page",
-                    },
-                    native: true,
-                  }}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  ActionsComponent={TablePaginationActions}
-                />
+
+                <div className="card">
+                  <Paginator
+                    first={page}
+                    rows={rows}
+                    totalRecords={totalRowLength}
+                    rowsPerPageOptions={[5, 10, 20, 30]}
+                    onPageChange={onPageChange}
+                  />
+                </div>
               </>
             </Table>
           ) : (
@@ -532,7 +524,7 @@ function Users(props) {
                 variant="primary"
                 onClick={handleSubmitAddUsers}
               >
-                {t("Save")} 
+                {t("Save")}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -599,7 +591,7 @@ function Users(props) {
                 variant="primary"
                 onClick={() => handleSubmitEdit(editItem.id)}
               >
-                {t("Save")} 
+                {t("Save")}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -610,6 +602,3 @@ function Users(props) {
 }
 
 export default Users;
-
-//  "country_id":"9a2ddaa8-33a3-46d8-a1f6-8d2da683fb3f",
-//  "governorate_id":"9a11c064-b2fb-40ed-bcf2-a0225ffa0a4f"
