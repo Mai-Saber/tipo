@@ -5,20 +5,16 @@ import { Link } from "react-router-dom";
 import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import MenuItem from "@mui/material/MenuItem";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
 import "../../common/show modal/showModal.css";
-import { TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { Col, Row } from "react-bootstrap";
-import Box from "@mui/material/Box";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
 import "../../common/upperTable/upperTable.css";
 import Loading from "../../common/loading/loading";
 import { Paginator } from "primereact/paginator";
+import AboveTable from "./above table/above table";
+import NoData from "../../common/no data/noData";
+import ModalShow from "./modals/show";
+import ModalAdd from "./modals/add";
+import ModalEdit from "./modals/edit";
 
 function Users(props) {
   const [loading, setLoading] = useState(true);
@@ -265,68 +261,27 @@ function Users(props) {
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-
       {/* user */}
       {!loading && (
         <div className="users">
           {/* header */}
           <h1 className="header">{t("Users")}</h1>
-
           {/* upper table */}
-          <div className="upperTable">
-            <Row>
-              {/* search */}
-              <Col xs={12} xl={4}>
-                <input
-                  placeholder={t("SearchByName")}
-                  type="Search"
-                  name="queryString"
-                  value={searchRequestControls.queryString}
-                  onChange={(e) =>
-                    handleSearchReq(e, { queryString: e.target.value })
-                  }
-                  className="inputSearch"
-                />
-              </Col>
-              {/* filter types */}
-              <Col xs={9} xl={4}>
-                <Box className="filter">
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      {t("UserType")}
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label={t("UserType")}
-                      name="filterType"
-                      value={searchRequestControls.filterType}
-                      onChange={(e) =>
-                        handleSearchReq(e, { filterType: e.target.value })
-                      }
-                    >
-                      <MenuItem value="">{t("All")}</MenuItem>
-                      {filterTypes?.map((el) => (
-                        <MenuItem key={el.id} value={el.id}>
-                          {t(el.name)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Col>
-              {/* add button */}
-              <Col xs={3} xl={4}>
-                <button onClick={handleAdd} className="add btn">
-                  <i className="ri-add-circle-line"></i>
-                </button>
-              </Col>
-            </Row>
-          </div>
-
+          <AboveTable
+            searchRequestControls={searchRequestControls}
+            handleSearchReq={handleSearchReq}
+            filterTypes={filterTypes}
+            handleAdd={handleAdd}
+          />
           {/* table */}
           {row.length !== 0 ? (
-            <Table columns={columns}>
+            <Table
+              columns={columns} // pagination
+              first={page}
+              rows={rows}
+              totalRecords={totalRowLength}
+              onPageChange={onPageChange}
+            >
               <>
                 {/* table children */}
 
@@ -384,217 +339,28 @@ function Users(props) {
               </>
             </Table>
           ) : (
-            <div className="noData">
-              <h3>Oops,there is no user, let's create one </h3>
-              <img src="../../../../assets/no-data.avif" alt="no data" />
-            </div>
+            <NoData data="user" />
           )}
 
           {/* modals */}
           {/* show modal */}
-          <Modal className="showModal" show={showModal} onHide={handleClose}>
-            <Modal.Header closeButton className="header">
-              <Modal.Title>{item.name}</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-              <p>
-                <span className="label">{t("Name")} : </span>
-                {item.name}
-              </p>
-              <p>
-                <span className="label">{t("Email")} :</span> {item.email}
-              </p>
-              <p>
-                <span className="label">{t("Phone")} : </span>
-                {item.phone}
-              </p>
-              <p>
-                <span className="label">{t("Id")} : </span>
-                {item.id}
-              </p>
-              <p>
-                <span className="label">{t("CreatedAt")} : </span>
-                {item.created_at}
-              </p>
-            </Modal.Body>
-
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                className="close btn btn-danger"
-              >
-                {t("Close")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalShow show={showModal} handleClose={handleClose} item={item} />
           {/* add modal */}
-          <Modal show={addModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("AddNewUser")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={newUser.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Email")}
-                  name="email"
-                  value={newUser.email}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("Phone")}
-                  name="phone"
-                  value={newUser.phone}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={newUser.password}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Address")}
-                  name="address"
-                  value={newUser.address}
-                  onChange={handleChange}
-                />
-                {/* select user type */}
-                <Box className="type">
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      {t("UserType")}
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      name="user_account_type_id"
-                      value={newUser.user_account_type_id}
-                      label={t("UserType")}
-                      onChange={handleChange}
-                    >
-                      {filterTypes?.map((el) => (
-                        <MenuItem key={el.id} value={el.id}>
-                          {t(el.name)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={handleSubmitAddUsers}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalAdd
+            show={addModal}
+            handleClose={handleClose}
+            newUser={newUser}
+            filterTypes={filterTypes}
+            handleSubmitAddUsers={handleSubmitAddUsers}
+          />
           {/* edit modal */}
-          <Modal show={editModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("EditUser")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={editItem.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("Phone")}
-                  name="phone"
-                  value={editItem.phone}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={editItem.password}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Address")}
-                  name="address"
-                  value={editItem.address}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={() => handleSubmitEdit(editItem.id)}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalEdit
+            show={editModal}
+            handleClose={handleClose}
+            editItem={editItem}
+            handleChange={handleChange}
+            handleSubmitEdit={handleSubmitEdit}
+          />
         </div>
       )}
     </>

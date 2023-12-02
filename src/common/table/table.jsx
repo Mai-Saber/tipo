@@ -2,21 +2,13 @@ import * as React from "react";
 import Paper from "@mui/material/Paper";
 import "./table.css";
 import { useTranslation } from "react-i18next";
+import { Paginator } from "primereact/paginator";
 
 export default function StickyHeadTable(props) {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-    console.log("handleChangePage");
-  };
-    const { t } = useTranslation();
-
+  const { t } = useTranslation();
 
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }} className="commonTable">
-
       <table>
         <thead>
           <tr>
@@ -28,8 +20,16 @@ export default function StickyHeadTable(props) {
         </thead>
         <tbody>{props.children}</tbody>
       </table>
-
-      
+      {/* // */}
+      <div className="card">
+        <Paginator
+          first={props.first}
+          rows={props.rows}
+          totalRecords={props.totalRecords}
+          rowsPerPageOptions={[5, 10, 20, 30]}
+          onPageChange={props.onPageChange}
+        />
+      </div>
     </Paper>
   );
 }

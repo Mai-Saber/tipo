@@ -47,6 +47,41 @@
 .name{
     text-transform: capitalize;
 }
+/* pagination */
+.card {
+    border: transparent !important;
+    position: relative;
+}
+
+.card .p-paginator {
+    position: relative;
+    /* left: 50%; */
+
+}
+
+.card .p-paginator button {
+    color: var(--babyBlue-color) !important;
+    background-color: var(--grey-color) !important;
+}
+
+.card .p-paginator button:disabled {
+    color: rgba(128, 128, 128, 0.178) !important;
+
+}
+
+.card .p-paginator button:active {
+    border: 1px solid var(--babyBlue-color) !important;
+
+}
+
+@media (min-width: 100px) and (max-width: 1190px) {
+    .card .p-paginator {
+        position: unset;
+        width: 90vw !important;
+        height: fit-content;
+        left: 0 !important;
+    }
+}
 /* ////////// */
 @media (min-width:100px) and (max-width:900px) {
     .commonTable {

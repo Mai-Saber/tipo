@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
 import Table from "../../common/table/table";
+import UpperTable from "../../common/upperTable/upperTable";
+import "../../common/show modal/showModal.css";
+import Loading from "../../common/loading/loading";
+import NoData from "../../common/no data/noData";
+
+import ModalShow from "./modals/show";
+import ModalAdd from "./modals/add";
+import ModalEdit from "./modals/edit";
+
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import MenuItem from "@mui/material/MenuItem";
-import UpperTable from "../../common/upperTable/upperTable";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import "../../common/show modal/showModal.css";
-import { TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import Loading from "../../common/loading/loading";
-import { Paginator } from "primereact/paginator";
 
 function Clients(props) {
   const [loading, setLoading] = useState(true);
@@ -261,7 +262,7 @@ function Clients(props) {
     setAddModal(false);
     setEditModal(false);
   };
-  // ////////////////////////////////////////
+  /////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
@@ -271,7 +272,6 @@ function Clients(props) {
         <div className="clients">
           {/* header */}
           <h1 className="header">{t("Clients")}</h1>
-
           {/* upper table */}
           <UpperTable
             handleAdd={handleAdd}
@@ -281,10 +281,16 @@ function Clients(props) {
               handleSearchReq(e, { queryString: e.target.value })
             }
           />
-
           {/* table */}
           {row.length !== 0 ? (
-            <Table columns={columns}>
+            <Table
+              columns={columns}
+              // pagination
+              first={page}
+              rows={rows}
+              totalRecords={totalRowLength}
+              onPageChange={onPageChange}
+            >
               <>
                 {/* table children */}
                 {/* pagination  before table map*/}
@@ -327,249 +333,37 @@ function Clients(props) {
                     </tr>
                   </>
                 ))}
-                {/* pagination */}
-                <div className="card">
-                  <Paginator
-                    first={page}
-                    rows={rows}
-                    totalRecords={totalRowLength}
-                    rowsPerPageOptions={[5, 10, 20, 30]}
-                    onPageChange={onPageChange}
-                  />
-                </div>
               </>
             </Table>
           ) : (
-            <div className="noData">
-              <h3>Oops,there is no client ,let's create one </h3>
-              <img src="../../../../assets/no-data.avif" alt="no data" />
-            </div>
+            <NoData data="Client" />
           )}
-
           {/* modals */}
           {/* show modal */}
-          <Modal className="showModal" show={showModal} onHide={handleClose}>
-            <Modal.Header closeButton className="header">
-              <Modal.Title>{item.name}</Modal.Title>
-            </Modal.Header>
+          <ModalShow
+            show={showModal}
+            handleClose={handleClose}
+            title={item.name}
+            item={item}
+          />
 
-            <Modal.Body>
-              <p>
-                <span className="label">{t("Name")} : </span>
-                {item.name}
-              </p>
-              <p>
-                <span className="label">{t("Email")} :</span> {item.email}{" "}
-              </p>
-              <p>
-                <span className="label">{t("Phone")} : </span>
-                {item.phone}
-              </p>
-              <p>
-                <span className="label">{t("Id")} : </span>
-                {item.id}
-              </p>
-              <p>
-                <span className="label">{t("CreatedAt")}: </span>
-                {item.created_at}
-              </p>
-            </Modal.Body>
-
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                className="close btn btn-danger"
-              >
-                {t("Close")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
           {/* add modal */}
-          <Modal show={addModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("AddNewClient")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={newClient.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Email")}
-                  name="email"
-                  value={newClient.email}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("Phone")}
-                  name="phone"
-                  value={newClient.phone}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={newClient.password}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Address")}
-                  name="address"
-                  value={newClient.address}
-                  onChange={handleChange}
-                />
-
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("AvailableCompaniesCount")}
-                  name="available_companies_count"
-                  value={newClient.available_companies_count}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("AvailableEmployeesCount")}
-                  name="available_employees_count"
-                  value={newClient.available_employees_count}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("CountryId")}
-                  name="country_id"
-                  value={newClient.country_id}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("GovernorateId")}
-                  name="governorate_id"
-                  value={newClient.governorate_id}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={handleSubmitAddClient}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalAdd
+            show={addModal}
+            handleClose={handleClose}
+            title={t("AddNewClient")}
+            newClient={newClient}
+            handleChange={handleChange}
+            handleSubmitAddClient={handleSubmitAddClient}
+          />
           {/* edit modal */}
-          <Modal show={editModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("EditClient")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={editItem.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("Phone")}
-                  name="phone"
-                  value={editItem.phone}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Password")}
-                  name="password"
-                  value={editItem.password}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Address")}
-                  name="address"
-                  value={editItem.address}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={() => handleSubmitEdit(editItem.id)}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalEdit
+            show={editModal}
+            handleClose={handleClose}
+            editItem={editItem}
+            handleChange={handleChange}
+            handleSubmitEdit={() => handleSubmitEdit(editItem.id)}
+          />
         </div>
       )}
     </>
@@ -577,6 +371,3 @@ function Clients(props) {
 }
 
 export default Clients;
-
-//  "country_id":"9a2ddaa8-33a3-46d8-a1f6-8d2da683fb3f",
-//  "governorate_id":"9a11c064-b2fb-40ed-bcf2-a0225ffa0a4f"

@@ -1,28 +1,27 @@
 import React, { useState, useEffect } from "react";
+
+import "../../common/show modal/showModal.css";
+import NoData from "../../common/no data/noData";
 import Table from "../../common/table/table";
+import Loading from "../../common/loading/loading";
+import UpperTable from "../../common/upperTable/upperTable";
+import { base_url, config } from "../../service/service";
+
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import UpperTable from "../../common/upperTable/upperTable";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import "../../common/show modal/showModal.css";
-import { TextField } from "@mui/material";
-import TablePagination from "@mui/material/TablePagination";
-import TablePaginationActions from "../../common/pagination/pagination";
 import { useTranslation } from "react-i18next";
-import Loading from "../../common/loading/loading";
-import { Paginator } from "primereact/paginator";
+
+import ModalShow from "./modals/show";
+import ModalAdd from "./modals/add";
+import ModalEdit from "./modals/edit";
 
 function Countries(props) {
   const [loading, setLoading] = useState(true);
-
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
   const [totalRowLength, setTotalRowLength] = useState("");
-
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
@@ -259,7 +258,14 @@ function Countries(props) {
 
           {/* table */}
           {row.length !== 0 ? (
-            <Table columns={columns}>
+            <Table
+              columns={columns}
+              // pagination
+              first={page}
+              rows={rows}
+              totalRecords={totalRowLength}
+              onPageChange={onPageChange}
+            >
               <>
                 {/* table children */}
                 {/* pagination  before table map*/}
@@ -313,202 +319,31 @@ function Countries(props) {
                   </>
                 ))}
                 {/* pagination */}
-                <div className="card">
-                  <Paginator
-                    first={page}
-                    rows={rows}
-                    totalRecords={totalRowLength}
-                    rowsPerPageOptions={[3,5, 10, 20, 30]}
-                    onPageChange={onPageChange}
-                  />
-                </div>
               </>
             </Table>
           ) : (
-            <div className="noData">
-              <h3>Oops,there is no country, let's create one </h3>
-              <img src="../../../../assets/no-data.avif" alt="no data" />
-            </div>
+            <NoData data="Country"/>
           )}
 
           {/* modals */}
           {/* show modal */}
-          <Modal show={showModal} onHide={handleClose} className="showModal">
-            <Modal.Header closeButton className="header">
-              <Modal.Title>{item.name}</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-              <p>
-                <span className="label">{t("Name")} : </span>
-                {item.name}
-              </p>
-              <p>
-                <span className="label">{t("ArabicName")} :</span>{" "}
-                {item.name_ar}
-              </p>
-              <p>
-                <span className="label">{t("PhoneCode")} : </span>
-                {item.phone_code}
-              </p>
-              <p>
-                <span className="label">{t("Prefix")} : </span>
-                {item.prefix}
-              </p>
-              <p>
-                <span className="label">{t("Id")} : </span>
-                {item.id}
-              </p>
-            </Modal.Body>
-
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                className="close btn btn-danger"
-              >
-                {t("Close")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalShow show={showModal} handleClose={handleClose} item={item} />
           {/* add modal */}
-          <Modal show={addModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("AddNewCountry")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={newCountry.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("ArabicName")}
-                  name="name_ar"
-                  value={newCountry.name_ar}
-                  onChange={handleChange}
-                />
-
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("PhoneCode")}
-                  name="phone_code"
-                  value={newCountry.phone_code}
-                  onChange={handleChange}
-                />
-
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Prefix")}
-                  name="prefix"
-                  value={newCountry.prefix}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={handleSubmitAddCountry}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalAdd
+            show={addModal}
+            handleClose={handleClose}
+            newCountry={newCountry}
+            handleChange={handleChange}
+            handleSubmitAddCountry={handleSubmitAddCountry}
+          />
           {/* edit modal */}
-          <Modal show={editModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("EditCountry")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={editItem.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("ArabicName")}
-                  name="name_ar"
-                  value={editItem.name_ar}
-                  onChange={handleChange}
-                />
-
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="number"
-                  label={t("PhoneCode")}
-                  name="phone_code"
-                  value={editItem.phone_code}
-                  onChange={handleChange}
-                />
-
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Prefix")}
-                  name="prefix"
-                  value={editItem.prefix}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={() => handleSubmitEdit(editItem.id)}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalEdit
+            show={editModal}
+            handleClose={handleClose}
+            editItem={editItem}
+            handleChange={handleChange}
+            handleSubmitEdit={handleSubmitEdit}
+          />
         </div>
       )}
     </>

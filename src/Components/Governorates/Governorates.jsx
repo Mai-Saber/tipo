@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from "react";
+
 import Table from "../../common/table/table";
+import Loading from "../../common/loading/loading";
+import "../../common/show modal/showModal.css";
+import "../../common/upperTable/upperTable.css";
+import NoData from "../../common/no data/noData";
+import { base_url, config } from "../../service/service";
+
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import MenuItem from "@mui/material/MenuItem";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import "../../common/show modal/showModal.css";
-import { TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import "../../common/upperTable/upperTable.css";
-import { Col, Row } from "react-bootstrap";
-import Box from "@mui/material/Box";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import Loading from "../../common/loading/loading";
-import { Paginator } from "primereact/paginator";
+
+import AboveTable from "./above table/above table";
+import ModalShow from "./modals/show";
+import ModalAdd from "./modals/add";
+import ModalEdit from "./modals/edit";
 
 function Governorate(props) {
   const [loading, setLoading] = useState(true);
@@ -26,11 +24,9 @@ function Governorate(props) {
   const [currentFilterCountryId, setCurrentFilterCountryId] = useState(
     props.countryInApp
   );
-
   const [columns, setColumns] = useState([]);
   const [row, setRow] = useState([]);
   const [totalRowLength, setTotalRowLength] = useState("");
-
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
@@ -122,7 +118,6 @@ function Governorate(props) {
         perPage: perPage,
       });
 
-     
       const res = await axios.get(
         `${base_url}/admin/governorates-search-all?
           per_page=${Number(perPage) || ""}
@@ -283,65 +278,25 @@ function Governorate(props) {
         <div className="governorate">
           {/* header */}
           <h1 className="header">{t("Governorate")}</h1>
-
           {/* upper table */}
-          <div className="upperTable">
-            <Row>
-              {/* search */}
-              <Col xs={12} xl={4}>
-                <input
-                  placeholder={t("SearchByGovernorateName")}
-                  type="search"
-                  name="queryString"
-                  value={searchRequestControls.queryString}
-                  onChange={(e) =>
-                    handleSearchReq(e, { queryString: e.target.value })
-                  }
-                  className="inputSearch"
-                />
-              </Col>
-              {/* filter types */}
-              <Col xs={9} xl={4}>
-                <Box className="filter">
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">
-                      {t("SelectCountry")}
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label="Select Country"
-                      name="filterType"
-                      value={searchRequestControls.filterType}
-                      onChange={(e) =>
-                        handleSearchReq(e, { filterType: e.target.value })
-                      }
-                    >
-                      <MenuItem value="">All</MenuItem>
-                      {filterCountries?.map((el) => (
-                        <MenuItem key={el.id} value={el.id}>
-                          {el.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Col>
-              {/* add button */}
-              <Col xs={3} xl={4}>
-                <button onClick={handleAdd} className="add btn">
-                  <i className="ri-add-circle-line"></i>
-                </button>
-              </Col>
-            </Row>
-          </div>
-
+          <AboveTable
+            searchRequestControls={searchRequestControls}
+            handleSearchReq={handleSearchReq}
+            filterCountries={filterCountries}
+            handleAdd={handleAdd}
+          />
           {/* table */}
           {row.length !== 0 ? (
-            <Table columns={columns}>
+            <Table
+              columns={columns}
+              // pagination
+              first={page}
+              rows={rows}
+              totalRecords={totalRowLength}
+              onPageChange={onPageChange}
+            >
               <>
                 {/* table children */}
-                {/* pagination  before table map*/}
                 {row?.map((item) => (
                   <>
                     <tr key={item.id}>
@@ -381,192 +336,30 @@ function Governorate(props) {
                     </tr>
                   </>
                 ))}
-                {/* pagination */}
-                <div className="card">
-                  <Paginator
-                    first={page}
-                    rows={rows}
-                    totalRecords={totalRowLength}
-                    rowsPerPageOptions={[ 5, 10, 20, 30]}
-                    onPageChange={onPageChange}
-                  />
-                </div>
               </>
             </Table>
           ) : (
-            <div className="noData">
-              <h3>Oops,there is no Governorate, let's create one </h3>
-              <img src="../../../../assets/no-data.avif" alt="no data" />
-            </div>
+            <NoData data="Governorate" />
           )}
 
           {/* modals */}
           {/* show modal */}
-          <Modal className="showModal" show={showModal} onHide={handleClose}>
-            <Modal.Header closeButton className="header">
-              <Modal.Title>{item.name}</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-              <p>
-                <span className="label">{t("Name")} : </span>
-                {item.name}
-              </p>
-              <p>
-                <span className="label"> {t("ArabicName")} : </span>
-                {item.name_ar}
-              </p>
-              <p>
-                <span className="label">{t("Id")} :</span> {item.id}
-              </p>
-
-              <p>
-                <span className="label">{t("CountryId")} : </span>
-                {item.country_id}
-              </p>
-              <p>
-                <span className="label">{t("Prefix")} : </span>
-                {item.prefix}
-              </p>
-            </Modal.Body>
-
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                className="close btn btn-danger"
-              >
-                {t("Close")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalShow show={showModal} handleClose={handleClose} item={item} />
           {/* add modal */}
-          <Modal show={addModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title>{t("AddNewGovernorate")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={newGovernorate.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("ArabicName")}
-                  name="name_ar"
-                  value={newGovernorate.name_ar}
-                  onChange={handleChange}
-                />
-
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("CountryId")}
-                  name="country_id"
-                  value={newGovernorate.country_id}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Prefix")}
-                  name="prefix"
-                  value={newGovernorate.prefix}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={handleSubmitAddGovernorate}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalAdd
+            show={addModal}
+            handleClose={handleClose}
+            newGovernorate={newGovernorate}
+            handleSubmitAddGovernorate={handleSubmitAddGovernorate}
+          />
           {/* edit modal */}
-          <Modal show={editModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("EditGovernorate")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={editItem.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("ArabicName")}
-                  name="name_ar"
-                  value={editItem.name_ar}
-                  onChange={handleChange}
-                />
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Prefix")}
-                  name="prefix"
-                  value={editItem.prefix}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={() => handleSubmitEdit(editItem.id)}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalEdit
+            show={editModal}
+            handleClose={handleClose}
+            editItem={editItem}
+            handleChange={handleChange}
+            handleSubmitEdit={handleSubmitEdit}
+          />
         </div>
       )}
     </>
