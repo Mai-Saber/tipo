@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from "react";
+
+import AboveTable from "../../../common/AboveTable/AboveTable";
+import "../../../common/show modal/showModal.css";
+import Loading from "../../../common/loading/loading";
+import { base_url, config } from "../../../service/service";
+import "primeicons/primeicons.css";
+import "./categories.css";
+
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { base_url, config } from "../../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import UpperTable from "../../../common/upperTable/upperTable";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import "../../../common/show modal/showModal.css";
-import { TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import Loading from "../../../common/loading/loading";
-import "./categories.css";
 import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
-import "primeicons/primeicons.css";
 import { Paginator } from "primereact/paginator";
+
+import ModalShow from "./modals/show";
+import ModalAdd from "./modals/add";
+import ModalEdit from "./modals/edit";
 
 function Categories(props) {
   const [categories, setCategories] = useState([]);
@@ -149,11 +152,7 @@ function Categories(props) {
 
   // add
   const handleAdd = (id) => {
-    if (id) {
-      newCategory.category_id = id;
-    } else {
-      newCategory.category_id = "";
-    }
+    newCategory.category_id = id;
     newCategory.name = "";
     setNewCategory(newCategory);
     setAddModal(true);
@@ -309,15 +308,14 @@ function Categories(props) {
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-
       {/* Categories */}
       {!loading && (
         <div className="categories">
           {/* header */}
           <h1 className="header">{t("Categories")}</h1>
           {/* upper table */}
-          <UpperTable
-            handleAdd={handleAdd}
+          <AboveTable
+            handleAdd={() => handleAdd("")}
             inputName="queryString"
             inputValue={searchRequestControls.queryString}
             handleChangeSearch={(e) =>
@@ -339,172 +337,35 @@ function Categories(props) {
               />
             </TreeTable>
           </div>
-
           {/* pagination */}
           <div className="card">
             <Paginator
               first={page}
               rows={rows}
               totalRecords={totalRowLength}
-              rowsPerPageOptions={[3,5, 10, 20, 30]}
+              rowsPerPageOptions={[3, 5, 10, 20, 30]}
               onPageChange={onPageChange}
             />
           </div>
-
           {/* modals*/}
           {/* show modal */}
-          <Modal className="showModal" show={showModal} onHide={handleClose}>
-            <Modal.Header closeButton className="header">
-              <Modal.Title>{item.data?.name}</Modal.Title>
-            </Modal.Header>
-
-            <Modal.Body>
-              <p>
-                <span className="label">{t("Name")} : </span>
-                {item.data?.name}
-              </p>
-              <p>
-                <span className="label">{t("Id")} : </span> {item.data?.id}
-              </p>
-              <p>
-                <span className="label">{t("created_at")} : </span>
-                {item.data?.created_at}
-              </p>
-              <p>
-                <span className="label">Children Count :</span>
-                {item.children?.length}
-              </p>
-
-              <hr />
-              <h3>{t("CompanyDetails")}</h3>
-              <p>
-                <span className="label">{t("CompanyName")} : </span>
-                {item.data?.company_id}
-              </p>
-              <p>
-                <span className="label">{t("CompanyId")} : </span>
-                {item.data?.company_id}
-              </p>
-              <p>
-                <span className="label"> {t("ClientId")} : </span>
-                {item.data?.client_id}
-              </p>
-            </Modal.Body>
-
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                className="close btn btn-danger"
-              >
-                {t("Close")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalShow show={showModal} handleClose={handleClose} item={item} />
           {/* add modal */}
-          <Modal show={addModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title> {t("AddNewCategory")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={newCategory.name}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Category_id")}
-                  name="category_id"
-                  value={newCategory.category_id}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("CompanyId")}
-                  name="company_id"
-                  value={newCategory.company_id}
-                  onChange={handleChange}
-                />
-                <TextField
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("ClientId")}
-                  name="client_id"
-                  value={newCategory.client_id}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={handleSubmitAddCategory}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalAdd
+            show={addModal}
+            handleClose={handleClose}
+            newCategory={newCategory}
+            handleChange={handleChange}
+            handleSubmitAddCategory={handleSubmitAddCategory}
+          />
           {/* edit modal */}
-          <Modal show={editModal} onHide={handleClose} className="Modal">
-            <Modal.Header closeButton>
-              <Modal.Title>{t("EditCategory")}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <form action="post">
-                <TextField
-                  autoFocus
-                  className="input"
-                  id="outlined-basic"
-                  variant="outlined"
-                  type="text"
-                  label={t("Name")}
-                  name="name"
-                  value={editItem.name}
-                  onChange={handleChange}
-                />
-              </form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                className="close btn btn-danger"
-                variant="secondary"
-                onClick={handleClose}
-              >
-                {t("Close")}
-              </Button>
-              <Button
-                className="btn btn-primary"
-                variant="primary"
-                onClick={() => handleSubmitEdit(editItem.id)}
-              >
-                {t("Save")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
+          <ModalEdit
+            show={editModal}
+            editItem={editItem}
+            handleClose={handleClose}
+            handleChange={handleChange}
+            handleSubmitEdit={handleSubmitEdit}
+          />
         </div>
       )}
     </>
@@ -512,4 +373,3 @@ function Categories(props) {
 }
 
 export default Categories;
-

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Table from "../../common/table/table";
-import UpperTable from "../../common/upperTable/upperTable";
+import AboveTable from "../../common/AboveTable/AboveTable";
 import "../../common/show modal/showModal.css";
 import Loading from "../../common/loading/loading";
 import NoData from "../../common/no data/noData";
@@ -10,11 +10,11 @@ import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
+import TableIcons from "../../common/table icons/tableIcons";
 
 function Clients(props) {
   const [loading, setLoading] = useState(true);
@@ -273,7 +273,7 @@ function Clients(props) {
           {/* header */}
           <h1 className="header">{t("Clients")}</h1>
           {/* upper table */}
-          <UpperTable
+          <AboveTable
             handleAdd={handleAdd}
             inputName="queryString"
             inputValue={searchRequestControls.queryString}
@@ -291,49 +291,21 @@ function Clients(props) {
               totalRecords={totalRowLength}
               onPageChange={onPageChange}
             >
-              <>
-                {/* table children */}
-                {/* pagination  before table map*/}
-                {row?.map((item) => (
-                  <>
-                    <tr key={item.id}>
-                      <td className="name">{item.name} </td>
-                      <td>{item.email}</td>
-                      <td>{item.phone}</td>
+              {/* table children */}
+              {row?.map((item) => (
+                <tr key={item.id}>
+                  <td className="name">{item.name} </td>
+                  <td>{item.email}</td>
+                  <td>{item.phone}</td>
 
-                      <td className="icons">
-                        {/* edit */}
-
-                        <Link
-                          className="edit"
-                          to=""
-                          onClick={() => handleEdit(item.id)}
-                        >
-                          <i className="ri-pencil-line"></i>
-                        </Link>
-
-                        {/* delete */}
-                        <Link
-                          className="delete"
-                          to=""
-                          onClick={() => handleDelete(item.id, item.name)}
-                        >
-                          <i className="ri-delete-bin-2-fill"></i>
-                        </Link>
-                        {/* show */}
-
-                        <Link
-                          className="show"
-                          to=""
-                          onClick={() => handleShow(item.id)}
-                        >
-                          <i className="ri-eye-line"></i>
-                        </Link>
-                      </td>
-                    </tr>
-                  </>
-                ))}
-              </>
+                  <TableIcons
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handleShow={handleShow}
+                  />
+                </tr>
+              ))}
             </Table>
           ) : (
             <NoData data="Client" />

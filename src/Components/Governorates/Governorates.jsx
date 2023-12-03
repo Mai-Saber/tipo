@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import Table from "../../common/table/table";
 import Loading from "../../common/loading/loading";
 import "../../common/show modal/showModal.css";
-import "../../common/upperTable/upperTable.css";
 import NoData from "../../common/no data/noData";
+import TableIcons from "../../common/table icons/tableIcons";
 import { base_url, config } from "../../service/service";
 
 import axios from "axios";
@@ -295,48 +295,21 @@ function Governorate(props) {
               totalRecords={totalRowLength}
               onPageChange={onPageChange}
             >
-              <>
-                {/* table children */}
-                {row?.map((item) => (
-                  <>
-                    <tr key={item.id}>
-                      <td className="name">{item.name} </td>
-                      <td>{item.name_ar} </td>
-                      <td>{item.prefix}</td>
+              {/* table children */}
+              {row?.map((item) => (
+                <tr key={item.id}>
+                  <td className="name">{item.name} </td>
+                  <td>{item.name_ar} </td>
+                  <td>{item.prefix}</td>
 
-                      <td className="icons">
-                        {/* edit */}
-
-                        <Link
-                          className="edit"
-                          to=""
-                          onClick={() => handleEdit(item.id)}
-                        >
-                          <i className="ri-pencil-line"></i>
-                        </Link>
-
-                        {/* delete */}
-                        <Link
-                          className="delete"
-                          to=""
-                          onClick={() => handleDelete(item.id, item.name)}
-                        >
-                          <i className="ri-delete-bin-2-fill"></i>
-                        </Link>
-                        {/* show */}
-
-                        <Link
-                          className="show"
-                          to=""
-                          onClick={() => handleShow(item.id)}
-                        >
-                          <i className="ri-eye-line"></i>
-                        </Link>
-                      </td>
-                    </tr>
-                  </>
-                ))}
-              </>
+                  <TableIcons
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handleShow={handleShow}
+                  />
+                </tr>
+              ))}
             </Table>
           ) : (
             <NoData data="Governorate" />

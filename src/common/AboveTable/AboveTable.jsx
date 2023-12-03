@@ -1,11 +1,10 @@
 import React from "react";
-import "./upperTable.css";
+import "./AboveTable.css";
 import { Col, Row } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
-
-function UpperTable(props) {
-    const { t } = useTranslation();
+function AboveTable(props) {
+  const { t } = useTranslation();
 
   return (
     // <div className="upperTable">
@@ -61,7 +60,6 @@ function UpperTable(props) {
             name={props.inputName}
             value={props.inputValue}
             onChange={props.handleChangeSearch}
-
           />
         </Col>
 
@@ -76,4 +74,4 @@ function UpperTable(props) {
   );
 }
 
-export default UpperTable;
+export default AboveTable;

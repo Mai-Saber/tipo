@@ -1,31 +1,34 @@
-import { ToastContainer } from 'react-toastify';
-import "animate.css";
 import React, { useEffect, useState } from "react";
-import "./App.css";
-import "./common/language/language.css"
+import { ToastContainer } from "react-toastify";
+
 import Login from "./Components/login/login";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "toastify-js/src/toastify.css";
 import NavBar from "./Components/nav bar/navbar";
 import SideBar from "./Components/side bar/sidebar";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import User from "./Components/user/user";
 import Countries from "./Components/countries/countries";
+import User from "./Components/user/user";
 import Clients from "./Components/clients/clients";
-import Companies from "./Components/companies/companies";
+import Companies from "./Components/companies/companies/companies";
 import NotFound from "./Components/notFound/notFound";
-import axios from "axios";
-import Toastify from "toastify-js";
-import "toastify-js/src/toastify.css";
-import i18n from "./common/language/i18n";
 import Branches from "./Components/companies/Branches/branches";
 import Variants from "./Components/companies/variants/variants";
 import Governorate from "./Components/Governorates/Governorates";
 import Categories from "./Components/companies/categories/categories";
+import "./common/language/language.css";
+import i18n from "./common/language/i18n";
+import "animate.css";
+import "./App.css";
+
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "toastify-js/src/toastify.css";
+import axios from "axios";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
 import { PrimeReactProvider } from "primereact/api";
 import "primereact/resources/themes/lara-light-indigo/theme.css"; // theme
 import "primeicons/primeicons.css";
 import "primereact/resources/primereact.css";
+import AllRoutes from "./common/routes/allRoutes";
 
 // /////////////////////////////////////////
 const token = sessionStorage.getItem("token");
@@ -106,91 +109,71 @@ function App() {
       document.getElementById("side").classList.toggle("disable");
     }
   };
+  //////////////////////////////////////////////////
   return (
-    <>
-      <div className="app">
-        <BrowserRouter>
-          <ToastContainer />
-          <Routes>
-            <Route path="/" exact element={<Login />} />
-          </Routes>
-          {/* ///////////////*/}
-          {sessionStorage.getItem("token") && (
-            <div className="appContent">
-              {window.location.pathname.trim() === "/" || (
-                <NavBar handleSideBar={handleSideBar} />
-              )}
-              <div className="layout">
-                <SideBar id="side" handleSideBar={handleSideBar} />
+    <div className="app">
+      <BrowserRouter>
+        <ToastContainer />
+        <Routes>
+          <Route path="/" exact element={<Login />} />
+        </Routes>
+        {/* ///////////////*/}
+        {sessionStorage.getItem("token") && (
+          <div className="appContent">
+            {window.location.pathname.trim() === "/" || (
+              <NavBar handleSideBar={handleSideBar} />
+            )}
+            <div className="layout">
+              <SideBar id="side" handleSideBar={handleSideBar} />
 
-                <main className="main">
-                  <PrimeReactProvider>
-                    <Routes>
-                      <Route
-                        path="/countries"
-                        element={
-                          <Countries handleGovernorate={handleGovernorate} />
-                        }
+              <main className="main">
+                <PrimeReactProvider>
+                  <AllRoutes
+                    countriesEle={
+                      <Countries handleGovernorate={handleGovernorate} />
+                    }
+                    ///
+                    companiesEle={
+                      <Companies
+                        handleBranches={handleBranches}
+                        handleVariant={handleVariant}
+                        handleCategories={handleCategories}
                       />
-                      , ,
-                      <Route
-                        path="/governorate"
-                        element={<Governorate countryInApp={countryId} />}
+                    }
+                    ///
+                    variantsEle={
+                      <Variants
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
                       />
-                      ,
-                      <Route
-                        path="/companies"
-                        element={
-                          <Companies
-                            handleBranches={handleBranches}
-                            handleVariant={handleVariant}
-                            handleCategories={handleCategories}
-                          />
-                        }
+                    }
+                    ///
+                    branchesEle={
+                      <Branches
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
                       />
-                      ,
-                      <Route
-                        path="/companies/variants"
-                        element={
-                          <Variants
-                            companyIDInApp={companyID}
-                            clientIdInApp={clientId}
-                          />
-                        }
+                    }
+                    ///
+                    categoriesEle={
+                      <Categories
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
                       />
-                      ,
-                      <Route
-                        path="/companies/branches"
-                        element={
-                          <Branches
-                            companyIDInApp={companyID}
-                            clientIdInApp={clientId}
-                          />
-                        }
-                      />
-                      ,
-                      <Route
-                        path="/companies/categories"
-                        element={
-                          <Categories
-                            companyIDInApp={companyID}
-                            clientIdInApp={clientId}
-                          />
-                        }
-                      />
-                      ,
-                      <Route path="/users" element={<User />} />,
-                      <Route path="/clients" element={<Clients />} />,
-                      <Route path="*" element={<NotFound />} />,
-                    </Routes>
-                  </PrimeReactProvider>
-                </main>
-              </div>
+                    }
+                    ///
+                    governorateEle={<Governorate countryInApp={countryId} />}
+                    userEle={<User />}
+                    clientsEle={<Clients />}
+                    notFoundEle={<NotFound />}
+                  />
+                </PrimeReactProvider>
+              </main>
             </div>
-          )}
-        </BrowserRouter>
-      </div>
-    </>
+          </div>
+        )}
+      </BrowserRouter>
+    </div>
   );
 }
 

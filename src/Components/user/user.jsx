@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
+
 import Table from "../../common/table/table";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import NoData from "../../common/no data/noData";
+import TableIcons from "../../common/table icons/tableIcons";
+import Loading from "../../common/loading/loading";
+import "../../common/show modal/showModal.css";
 import { base_url, config } from "../../service/service";
+import "../../common/AboveTable/AboveTable.css"
+
+import axios from "axios";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-import "../../common/show modal/showModal.css";
 import { useTranslation } from "react-i18next";
-import "../../common/upperTable/upperTable.css";
-import Loading from "../../common/loading/loading";
-import { Paginator } from "primereact/paginator";
+
 import AboveTable from "./above table/above table";
-import NoData from "../../common/no data/noData";
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
@@ -276,67 +278,28 @@ function Users(props) {
           {/* table */}
           {row.length !== 0 ? (
             <Table
-              columns={columns} // pagination
+              columns={columns}
+              // pagination
               first={page}
               rows={rows}
               totalRecords={totalRowLength}
               onPageChange={onPageChange}
             >
-              <>
-                {/* table children */}
+              {/* table children */}
+              {row?.map((item, i) => (
+                <tr key={item.id}>
+                  <td className="name">{item.name} </td>
+                  <td>{item.email}</td>
+                  <td>{item.phone}</td>
 
-                {row?.map((item, i) => (
-                  <>
-                    <tr key={item.id}>
-                      <td className="name">{item.name} </td>
-                      <td>{item.email}</td>
-                      <td>{item.phone}</td>
-
-                      <td className="icons">
-                        {/* edit */}
-
-                        <Link
-                          className="edit"
-                          to=""
-                          onClick={() => handleEdit(item.id)}
-                        >
-                          <i className="ri-pencil-line"></i>
-                        </Link>
-
-                        {/* delete */}
-                        <Link
-                          className="delete"
-                          to=""
-                          onClick={() => handleDelete(item.id, item.name)}
-                        >
-                          <i className="ri-delete-bin-2-fill"></i>
-                        </Link>
-                        {/* show */}
-
-                        <Link
-                          className="show"
-                          to=""
-                          onClick={() => handleShow(item.id)}
-                        >
-                          <i className="ri-eye-line"></i>
-                        </Link>
-                      </td>
-                    </tr>
-                  </>
-                ))}
-
-                {/* pagination */}
-
-                <div className="card">
-                  <Paginator
-                    first={page}
-                    rows={rows}
-                    totalRecords={totalRowLength}
-                    rowsPerPageOptions={[5, 10, 20, 30]}
-                    onPageChange={onPageChange}
+                  <TableIcons
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handleShow={handleShow}
                   />
-                </div>
-              </>
+                </tr>
+              ))}
             </Table>
           ) : (
             <NoData data="user" />
