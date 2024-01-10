@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 
 import "../../common/show modal/showModal.css";
-import NoData from "../../common/no data/noData";
+import NoData from "../../common/noData/noData";
 import Table from "../../common/table/table";
 import Loading from "../../common/loading/loading";
-import AboveTable from "../../common/AboveTable/AboveTable";
-import TableIcons from "../../common/table icons/tableIcons";
+import TableFilter from "../../common/tableFilter/tableFilter";
+import TableIcons from "../../common/tableIcons/tableIcons";
+import WrongMessage from "../../common/wrongMessage/wrongMessage";
 import { base_url, config } from "../../service/service";
 
 import axios from "axios";
@@ -20,14 +21,15 @@ import ModalEdit from "./modals/edit";
 
 function Countries(props) {
   const [loading, setLoading] = useState(true);
-  const [columns, setColumns] = useState([]);
-  const [row, setRow] = useState([]);
-  const [totalRowLength, setTotalRowLength] = useState("");
+   const [wrongMessage, setWrongMessage] = useState(false);
+  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [totalCountriesLength, setTotalCountriesLength] = useState("");
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [item, setItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
   const [newCountry, setNewCountry] = useState({
     name: "",
@@ -39,18 +41,25 @@ function Countries(props) {
 
   // general
   useEffect(() => {
-    // loading
-    setTimeout(function () {
-      setLoading(false);
-    }, 3000);
-
     // get countries
     const getCountries = async () => {
       const url = `${base_url}/admin/countries`;
-      const res = await axios.get(url);
-      setColumns(["Name", "Arabic Name", "Phone Code", "Prefix"]);
-      setRow(res.data.data);
-      setTotalRowLength(res.data.meta?.total);
+      await axios
+        .get(url)
+        .then((res) => {
+          setLoading(false);
+          setColumnsHeader(["Id","Name", "Arabic Name", "Phone Code", "Prefix"]);
+          setCountries(res.data.data);
+          setTotalCountriesLength(res.data.meta?.total);
+        })
+        .catch((err) => {
+          // loading
+          setTimeout(function () {
+            setLoading(false);
+          }, 3000);
+
+          setWrongMessage(true);
+        });
     };
 
     // call functions
@@ -74,8 +83,8 @@ function Countries(props) {
 
   // search & filter & pagination
 
-  const [rows, setRows] = useState(10);
-  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
     queryString: "",
     filterType: "",
@@ -84,8 +93,8 @@ function Countries(props) {
   });
 
   const onPageChange = (e) => {
-    setRows(e.rows);
-    setPage(e.page + 1);
+    setRowsPerPage(e.rows);
+    setPageNumber(e.page + 1);
 
     handleSearchReq(e, {
       perPage: e.rows,
@@ -113,7 +122,7 @@ function Countries(props) {
           &page=${pageNumber || ""}
     `
       );
-      setRow(res.data.data);
+      setCountries(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -123,8 +132,8 @@ function Countries(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(`${base_url}/admin/country/${id}`, config);
-      const newRow = row.filter((item) => item.id !== id);
-      setRow(newRow); // setRow(filterItems);
+      const newRow = countries.filter((item) => item.id !== id);
+      setCountries(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -160,7 +169,7 @@ function Countries(props) {
             color: "white",
           },
         }).showToast();
-        row.unshift(response.data.data);
+        countries.unshift(response.data.data);
         setNewCountry({ name: "", name_ar: "", phone_code: "", prefix: "" });
         setAddModal(false);
       })
@@ -181,7 +190,7 @@ function Countries(props) {
     setShowModal(true);
     const res = await axios.get(`${base_url}/admin/country/${id}`, config);
     console.log(res.data);
-    setItem(res.data.data);
+    setSelectedItem(res.data.data);
   };
 
   // edit
@@ -209,9 +218,9 @@ function Countries(props) {
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < row.length; i++) {
-          if (row[i].id === id) {
-            row[i] = res.data.data;
+        for (let i = 0; i < countries.length; i++) {
+          if (countries[i].id === id) {
+            countries[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -242,13 +251,13 @@ function Countries(props) {
 
       {/* countries */}
 
-      {!loading && (
+      {!loading && !wrongMessage && (
         <div className="countries">
           {/* header */}
           <h1 className="header">{t("Countries")}</h1>
 
           {/* upper table */}
-          <AboveTable
+          <TableFilter
             handleAdd={handleAdd}
             inputName="queryString"
             inputValue={searchRequestControls.queryString}
@@ -258,18 +267,19 @@ function Countries(props) {
           />
 
           {/* table */}
-          {row.length !== 0 ? (
+          {countries.length !== 0 ? (
             <Table
-              columns={columns}
+              columns={columnsHeader}
               // pagination
-              first={page}
-              rows={rows}
-              totalRecords={totalRowLength}
+              first={pageNumber}
+              rows={rowsPerPage}
+              totalRecords={totalCountriesLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {row?.map((item) => (
+              {countries?.map((item,i) => (
                 <tr key={item.id}>
+                  <td>{i+1}</td>
                   <td className="name">{item.name} </td>
                   <td>{item.name_ar}</td>
                   <td>{item.phone_code}</td>
@@ -300,7 +310,11 @@ function Countries(props) {
 
           {/* modals */}
           {/* show modal */}
-          <ModalShow show={showModal} handleClose={handleClose} item={item} />
+          <ModalShow
+            show={showModal}
+            handleClose={handleClose}
+            item={selectedItem}
+          />
           {/* add modal */}
           <ModalAdd
             show={addModal}
@@ -319,6 +333,8 @@ function Countries(props) {
           />
         </div>
       )}
+
+      {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }

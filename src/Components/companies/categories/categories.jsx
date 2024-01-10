@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 
-import AboveTable from "../../../common/AboveTable/AboveTable";
+import TableFilter from "../../../common/tableFilter/tableFilter";
 import "../../../common/show modal/showModal.css";
 import Loading from "../../../common/loading/loading";
+import NoData from "../../../common/noData/noData";
+import WrongMessage from "../../../common/wrongMessage/wrongMessage";
 import { base_url, config } from "../../../service/service";
 import "primeicons/primeicons.css";
 import "./categories.css";
@@ -19,21 +21,23 @@ import { Paginator } from "primereact/paginator";
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
+import ModalAddProduct from "./modals/addProduct";
 
 function Categories(props) {
   const [categories, setCategories] = useState([]);
-  const [totalRowLength, setTotalRowLength] = useState("");
+  const [totalCategoriesLength, setTotalCategoriesLength] = useState("");
 
   const [loading, setLoading] = useState(true);
-  const [selectedKey, setSelectedKey] = useState("");
+  const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [item, setItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
+  const [categoryName, setCategoryName] = useState("");
   const [newCategory, setNewCategory] = useState({
     client_id: clientID,
     company_id: companyID,
@@ -41,28 +45,46 @@ function Categories(props) {
     name: "",
   });
   const { t } = useTranslation();
+  // for add product model
+  const [addProductModal, setAddProductModal] = useState(false);
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
+  const [newProduct, setNewProduct] = useState({
+    client_id: clientID,
+    company_id: companyID,
+    category_id: "",
+    name: "",
+    description: "",
+    details: "",
+  });
 
   // general
   useEffect(() => {
-    // loading
-    setTimeout(function () {
-      setLoading(false);
-    }, 3000);
     // call functions
     getCategories();
   }, []);
 
   const getCategories = async () => {
     try {
-      const res = await axios.get(
-        `${base_url}/admin/company/categories/${companyID}`
-      );
-      setCategories(res.data.data);
-      setTotalRowLength(res.data.meta?.total);
+      await axios
+        .get(`${base_url}/admin/company/categories/${companyID}`)
+        .then((res) => {
+          setLoading(false);
+          setCategories(res.data.data);
+          setTotalCategoriesLength(res.data.meta?.total);
+        })
+        .catch((err) => {
+          // loading
+          setTimeout(function () {
+            setLoading(false);
+          }, 3000);
+
+          setWrongMessage(true);
+        });
     } catch (err) {
       console.log("errr", err);
     }
   };
+
   // change any input
   const handleChange = (e) => {
     const newData = {
@@ -70,8 +92,15 @@ function Categories(props) {
       [e.target.name]: e.target.value,
     };
     setNewCategory(newData);
+    //////////////////////
+    const addedProduct = {
+      ...newProduct,
+      [e.target.name]: e.target.value,
+    };
+    setNewProduct(addedProduct);
 
-    console.log(editItem);
+    console.log(e.target.name, e.target.value);
+    // ///////////////////
     const newItem = {
       ...editItem,
       [e.target.name]: e.target.value,
@@ -82,8 +111,8 @@ function Categories(props) {
   // search & filter
   // search & filter & pagination
 
-  const [rows, setRows] = useState(10);
-  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
     queryString: "",
     filterType: "",
@@ -92,8 +121,8 @@ function Categories(props) {
   });
 
   const onPageChange = (e) => {
-    setRows(e.rows);
-    setPage(e.page + 1);
+    setRowsPerPage(e.rows);
+    setPageNumber(e.page + 1);
 
     handleSearchReq(e, {
       perPage: e.rows,
@@ -150,12 +179,26 @@ function Categories(props) {
     }
   };
 
-  // add
+  // add category
+
+  const handleCatNameForAddModel = async (id) => {
+    await axios
+      .get(`${base_url}/admin/company/category/${id}`)
+      .then((res) => {
+        setCategoryName(res.data.data.data.name);
+      })
+      .catch();
+  };
+
   const handleAdd = (id) => {
     newCategory.category_id = id;
     newCategory.name = "";
     setNewCategory(newCategory);
     setAddModal(true);
+    // for show name instead id in modal
+    if (id !== "") {
+      handleCatNameForAddModel(id);
+    }
   };
 
   const handleSubmitAddCategory = async () => {
@@ -163,7 +206,6 @@ function Categories(props) {
       .post(`${base_url}/admin/company/category`, newCategory)
       .then((res) => {
         if (!newCategory.category_id) {
-          console.log(res.data.data);
           categories.unshift(res.data.data);
           Toastify({
             text: `Category created successfully `,
@@ -175,7 +217,6 @@ function Categories(props) {
         }
         //child
         else {
-          console.log("el");
           getCategories();
           // toast
           Toastify({
@@ -206,13 +247,63 @@ function Categories(props) {
       });
   };
 
+  // add product
+  const handleAddProduct = async (id) => {
+    console.log(id);
+    newProduct.category_id = id;
+    setNewProduct(newProduct);
+
+    // get category name
+    await axios
+      .get(`${base_url}/admin/company/category/${id}`)
+      .then((res) => {
+        setSelectedCategoryName(res.data.data.data.name);
+      })
+      .catch((err) => console.log(err));
+
+    setAddProductModal(true);
+  };
+
+  const handleSubmitAddProduct = async () => {
+    await axios
+      .post(`${base_url}/admin/company/category/product`, newProduct)
+      .then((res) => {
+        Toastify({
+          text: `Product created successfully `,
+          style: {
+            background: "green",
+            color: "white",
+          },
+        }).showToast();
+        setNewProduct({
+          client_id: clientID,
+          company_id: companyID,
+          category_id: "",
+          name: "",
+          description: "",
+          details: "",
+        });
+        setAddProductModal(false);
+      })
+      .catch((err) => {
+        console.log("err", err.response.data.message);
+        Toastify({
+          text: `${err.response.data.message}`,
+          style: {
+            background: "red",
+            color: "white",
+          },
+        }).showToast();
+      });
+  };
+
   // show
   const handleShow = async (id) => {
     const res = await axios.get(
       `${base_url}/admin/company/category/${id}`,
       config
     );
-    setItem(res.data.data);
+    setSelectedItem(res.data.data);
     setShowModal(true);
   };
 
@@ -264,39 +355,70 @@ function Categories(props) {
     setShowModal(false);
     setAddModal(false);
     setEditModal(false);
+    setAddProductModal(false);
   };
   // ////////////////////////////////////////
   const actionTemplate = (item) => {
     return (
-      <div className="flex flex-wrap gap-2 icons">
+      <div className="flex icons">
         {/* product */}
-
         <Link
-          className="product"
-          to=""
-          // onClick={() => handleShow(item.data.id)}
+          to="/companies/category/product"
+          title="Go to this category' products"
+          className="btn btn-primary"
+          onClick={() =>
+            props.handleProducts(
+              item?.data.id,
+              item?.data.client_id,
+              item?.data.company_id
+            )
+          }
         >
-          <button className="btn btn-primary">Products </button>
+          {t("Products")}
+        </Link>
+        {/* add product */}
+        <Link
+          to=""
+          title="Add Product to this category"
+          className="btn btn-primary"
+          onClick={() => handleAddProduct(item.data.id)}
+        >
+          {t("AddProducts")}
         </Link>
         {/* add */}
-        <Link className="add" to="" onClick={() => handleAdd(item.data.id)}>
+        <Link
+          className="add"
+          title="Add sub category"
+          to=""
+          onClick={() => handleAdd(item.data.id)}
+        >
           <i className="ri-add-circle-line"></i>
         </Link>
         {/* edit */}
-        <Link className="edit" to="" onClick={() => handleEdit(item.data.id)}>
+        <Link
+          className="edit"
+          title="edit this category"
+          to=""
+          onClick={() => handleEdit(item.data.id)}
+        >
           <i className="ri-pencil-line"></i>
         </Link>
         {/* delete */}
         <Link
           className="delete"
           to=""
+          title="delete this category"
           onClick={() => handleDelete(item.data.id, item.data.name)}
         >
           <i className="ri-delete-bin-2-fill"></i>
         </Link>
         {/* show */}
-
-        <Link className="show" to="" onClick={() => handleShow(item.data.id)}>
+        <Link
+          className="show"
+          title="show this category"
+          to=""
+          onClick={() => handleShow(item.data.id)}
+        >
           <i className="ri-eye-line"></i>
         </Link>
       </div>
@@ -309,12 +431,12 @@ function Categories(props) {
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
       {/* Categories */}
-      {!loading && (
+      {!loading && !wrongMessage && (
         <div className="categories">
           {/* header */}
           <h1 className="header">{t("Categories")}</h1>
           {/* upper table */}
-          <AboveTable
+          <TableFilter
             handleAdd={() => handleAdd("")}
             inputName="queryString"
             inputValue={searchRequestControls.queryString}
@@ -323,40 +445,60 @@ function Categories(props) {
             }
           />
           {/*tree*/}
-          <div className="card">
-            <TreeTable
-              className="table"
-              value={categories}
-              tableStyle={{ minWidth: "100%" }}
-            >
-              <Column field="name" header="Name" expander sortable></Column>
-              <Column
-                body={(item) => actionTemplate(item)}
-                field="id"
-                headerClassName="w-10rem"
-              />
-            </TreeTable>
-          </div>
-          {/* pagination */}
-          <div className="card">
-            <Paginator
-              first={page}
-              rows={rows}
-              totalRecords={totalRowLength}
-              rowsPerPageOptions={[3, 5, 10, 20, 30]}
-              onPageChange={onPageChange}
-            />
-          </div>
+          {categories.length !== 0 ? (
+            <>
+              <div className="card">
+                <TreeTable
+                  className="table"
+                  value={categories}
+                  tableStyle={{ minWidth: "100%" }}
+                >
+                  <Column field="name" header="Name" expander sortable></Column>
+                  <Column
+                    body={(item) => actionTemplate(item)}
+                    field="id"
+                    headerClassName="w-10rem"
+                  />
+                </TreeTable>
+              </div>
+              {/* pagination */}
+              <div className="card">
+                <Paginator
+                  first={pageNumber}
+                  rows={rowsPerPage}
+                  totalRecords={totalCategoriesLength}
+                  rowsPerPageOptions={[3, 5, 10, 20, 30]}
+                  onPageChange={onPageChange}
+                />
+              </div>
+            </>
+          ) : (
+            <NoData data="category" />
+          )}
           {/* modals*/}
           {/* show modal */}
-          <ModalShow show={showModal} handleClose={handleClose} item={item} />
+          <ModalShow
+            show={showModal}
+            handleClose={handleClose}
+            item={selectedItem}
+          />
           {/* add modal */}
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
             newCategory={newCategory}
+            categoryName={categoryName}
             handleChange={handleChange}
             handleSubmitAddCategory={handleSubmitAddCategory}
+          />
+          {/* add product modal */}
+          <ModalAddProduct
+            show={addProductModal}
+            handleClose={handleClose}
+            newProduct={newProduct}
+            selectedCategoryName={selectedCategoryName}
+            handleChange={handleChange}
+            handleSubmitAddProduct={handleSubmitAddProduct}
           />
           {/* edit modal */}
           <ModalEdit
@@ -368,6 +510,9 @@ function Categories(props) {
           />
         </div>
       )}
+
+      {/* wrong message */}
+      {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }

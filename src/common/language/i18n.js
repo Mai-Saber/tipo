@@ -59,7 +59,6 @@ i18n
           EditCompany: "Edit Company",
           SearchByCompanyName: "Search By Company Name",
           SelectCLient: " Select CLient",
-
           // branches modals
           CompanyDetails: "Company Details",
           CompanyId: "Company Id",
@@ -69,6 +68,7 @@ i18n
           AddNewCategory: "Add New Category",
           Category_id: "Category Id",
           EditCategory: "Edit Category",
+          AddProducts: "Add Product",
           // countries modals
           AddNewCountry: "Add New Country",
           EditCountry: "Edit Country",
@@ -87,6 +87,30 @@ i18n
           //Variant
           AddNewVariant: "Add New Variant",
           EditVariant: "Edit Variant",
+          // variant value
+          VariantValue: "Variant Value",
+          AddNewVariantValue: "Add New Value",
+          VariantId: "Variant Id",
+          EditValue: "Edit Value",
+          // Products
+          Products: "Products",
+          AddNewProduct: "Add New Product",
+          Details: "Details",
+          Description: "Description",
+          EditProduct: "Edit Product",
+          ///Final Products
+          FinalProducts: "Final Products",
+          // PriceList
+          PriceList: "Price List",
+          AddNewPriceList: "Add New Price List",
+          EditPriceList: "Edit Price List",
+          // Contacts
+          Contacts: "Contacts",
+          AddNewContact: "Add New Contact",
+          //WareHouse
+          WareHouses: "WareHouses",
+          AddNewWareHouse: "Add New WareHouse",
+          EditWareHouse: "Edit WareHouse",
         },
       },
       ar: {
@@ -122,7 +146,6 @@ i18n
           BranchName: "اسم الفرع",
           SearchByName: "البحث بالاسم",
           // modals buttons
-          submit: "موافقة",
           Save: "حفظ",
           Close: "اغلاق",
           // client modals
@@ -147,6 +170,7 @@ i18n
           AddNewCategory: "اضافة قسم جديد",
           Category_id: "الرقم التعريفي للقسم",
           EditCategory: "تعديل القسم",
+          AddProducts: " اضافة منتج",
           // countries modals
           AddNewCountry: "اضافة دولة جديدة",
           EditCountry: "تعديل الدولة",
@@ -164,7 +188,31 @@ i18n
           All: "الجميع",
           //Variant
           AddNewVariant: "اضافة صنف جديد",
-          EditVariant:" تعديل صنف"
+          EditVariant: " تعديل صنف",
+          // variant value
+          VariantValue: "قيمة الصنف",
+          AddNewVariantValue: " اضافة قيمة جديدة",
+          VariantId: "رقم التعريفي للصنف",
+          EditValue: "تعديل قيمة",
+          // products
+          Products: "المنتجات",
+          AddNewProduct: "اضافة منتج جديد",
+          Details: "التفاصيل",
+          Description: "الوصف",
+          EditProduct: "تعديل منتج",
+          // FinalProducts
+          FinalProducts: "المنتج الاخير",
+          // PriceList
+          PriceList: "قائمة اسعار",
+          AddNewPriceList: "اضافة قائمة اسعار جديدة",
+          EditPriceList: "تعديل قائمة اسعار",
+          // Contacts
+          Contacts: "جهات الاتصال",
+          AddNewContact: "اضافة جهة اتصال جديدة",
+          // WareHouse
+          WareHouse: "مخزن",
+          AddNewWareHouse: "اضافة مخزن جديد",
+          EditWareHouse:"تعديل مخزن "
         },
       },
     },

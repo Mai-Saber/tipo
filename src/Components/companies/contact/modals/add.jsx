@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-bootstrap/Modal";
-import { TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Button from "react-bootstrap/Button";
+import { TextField } from "@mui/material";
 import { base_url } from "../../../../service/service";
 import axios from "axios";
 
@@ -10,12 +10,11 @@ function ModalAdd(props) {
   const { t } = useTranslation();
   const [company, setCompany] = useState("");
   const [client, setClient] = useState("");
-  const [category, setCategory] = useState("");
 
   useEffect(() => {
     const getCompany = async () => {
       await axios
-        .get(`${base_url}/admin/company/${props.newCategory?.company_id}`)
+        .get(`${base_url}/admin/company/${props.newContact?.company_id}`)
         .then((res) => {
           setCompany(res.data.data.name);
         })
@@ -24,7 +23,7 @@ function ModalAdd(props) {
 
     const getCLient = async () => {
       await axios
-        .get(`${base_url}/admin/client/${props.newCategory?.client_id}`)
+        .get(`${base_url}/admin/client/${props.newContact?.client_id}`)
         .then((res) => {
           setClient(res.data.data.name);
         })
@@ -38,7 +37,7 @@ function ModalAdd(props) {
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title> {t("AddNewCategory")}</Modal.Title>
+        <Modal.Title> {t("AddNewContact")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">
@@ -50,7 +49,17 @@ function ModalAdd(props) {
             type="text"
             label={t("Name")}
             name="name"
-            value={props.newCategory?.name}
+            value={props.newContact?.name}
+            onChange={props.handleChange}
+          />
+          <TextField
+            className="input"
+            id="outlined-basic"
+            variant="outlined"
+            type="number"
+            label={t("Phone")}
+            name="phone"
+            value={props.newContact?.phone}
             onChange={props.handleChange}
           />
           <TextField
@@ -58,17 +67,11 @@ function ModalAdd(props) {
             id="outlined-basic"
             variant="outlined"
             type="text"
-            label={
-              props.newCategory?.category_id ? t("Category") : t("Category_id")
-            }
-            name="category_id"
-            value={
-              props.newCategory?.category_id
-                ? props.categoryName
-                : props.newCategory?.category_id
-            }
+            label={t("Email")}
+            name="email"
+            value={props.newContact?.email}
+            onChange={props.handleChange}
           />
-
           <TextField
             className="input"
             id="outlined-basic"
@@ -78,6 +81,7 @@ function ModalAdd(props) {
             name="company_id"
             value={company}
           />
+
           <TextField
             className="input"
             id="outlined-basic"
@@ -100,7 +104,7 @@ function ModalAdd(props) {
         <Button
           className="btn btn-primary"
           variant="primary"
-          onClick={props.handleSubmitAddCategory}
+          onClick={props.handleSubmitAddContact}
         >
           {t("Save")}
         </Button>

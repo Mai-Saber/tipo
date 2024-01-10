@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from "react";
 
 import Table from "../../common/table/table";
-import NoData from "../../common/no data/noData";
-import TableIcons from "../../common/table icons/tableIcons";
+import NoData from "../../common/noData/noData";
+import TableIcons from "../../common/tableIcons/tableIcons";
 import Loading from "../../common/loading/loading";
 import "../../common/show modal/showModal.css";
+import WrongMessage from "../../common/wrongMessage/wrongMessage";
+import "../../common/tableFilter/tableFilter.css";
 import { base_url, config } from "../../service/service";
-import "../../common/AboveTable/AboveTable.css"
 
 import axios from "axios";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
 
-import AboveTable from "./above table/above table";
+import UserFilters from "./userFilters/userFilters";
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
 function Users(props) {
   const [loading, setLoading] = useState(true);
-  const [filterTypes, setFilterTypes] = useState([]);
-  const [columns, setColumns] = useState([]);
-  const [row, setRow] = useState([]);
-  const [totalRowLength, setTotalRowLength] = useState("");
-
+  const [wrongMessage, setWrongMessage] = useState(false);
+  const [userAccountTypes, setUserAccountTypes] = useState([]);
+  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [totalUsersLength, setTotalUsersLength] = useState("");
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [item, setItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
   const [newUser, setNewUser] = useState({
     name: "",
@@ -43,22 +44,29 @@ function Users(props) {
 
   // general
   useEffect(() => {
-    // loading
-    setTimeout(function () {
-      setLoading(false);
-    }, 3000);
-
     // get USER
     const getUsers = async () => {
       const url = `${base_url}/admin/users`;
-      const res = await axios.get(url);
-      setColumns(["Name", "Email", "Phone"]);
-      setRow(res.data.data);
-      setTotalRowLength(res.data.meta?.total);
-    };
-    // get filter types
+      await axios
+        .get(url)
+        .then((res) => {
+          setLoading(false);
+          setColumnsHeader(["Id","Name", "Email", "Phone"]);
+          setUsers(res.data.data);
+          setTotalUsersLength(res.data.meta?.total);
+        })
+        .catch((err) => {
+          // loading
+          setTimeout(function () {
+            setLoading(false);
+          }, 3000);
 
-    const getFilterTypes = async () => {
+          setWrongMessage(true);
+        });
+    };
+
+    // get filter types
+    const userAccountTypes = async () => {
       const res = await axios.get(`${base_url}/system-lookups/1`);
       let arr = [];
       res.data.data.map((obj) => {
@@ -66,11 +74,11 @@ function Users(props) {
           arr.push(obj);
         }
       });
-      setFilterTypes(arr);
+      setUserAccountTypes(arr);
     };
     // call functions
     getUsers();
-    getFilterTypes();
+    userAccountTypes();
   }, []);
 
   // change any input
@@ -91,18 +99,18 @@ function Users(props) {
 
   // search & filter & pagination
 
-  const [rows, setRows] = useState(10);
-  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
-    queryString: "",
-    filterType: "",
-    pageNumber: "",
-    perPage: "",
+    query_string: "",
+    user_account_type_id: "",
+    page: "",
+    per_page: "",
   });
 
   const onPageChange = (e) => {
-    setRows(e.rows);
-    setPage(e.page + 1);
+    setRowsPerPage(e.rows);
+    setPageNumber(e.page + 1);
 
     handleSearchReq(e, {
       perPage: e.rows,
@@ -116,10 +124,10 @@ function Users(props) {
   ) => {
     try {
       setSearchRequestControls({
-        queryString: queryString,
-        filterType: filterType,
-        pageNumber: pageNumber,
-        perPage: perPage,
+        query_string: queryString,
+        user_account_type_id: filterType,
+        page: pageNumber,
+        per_page: perPage,
       });
 
       const res = await axios.get(
@@ -130,7 +138,7 @@ function Users(props) {
           &page=${pageNumber || ""}
     `
       );
-      setRow(res.data.data);
+      setUsers(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -140,8 +148,8 @@ function Users(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(`${base_url}/admin/user/${id}`, config);
-      const newRow = row.filter((item) => item.id !== id);
-      setRow(newRow); // setRow(filterItems);
+      const newRow = users.filter((item) => item.id !== id);
+      setUsers(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -166,18 +174,17 @@ function Users(props) {
   };
 
   const handleSubmitAddUsers = async () => {
-    console.log(newUser);
     await axios
       .post(`${base_url}/admin/user`, newUser)
       .then((response) => {
         Toastify({
-          text: `country created successfully `,
+          text: `user created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        row.unshift(response.data.data);
+        users.unshift(response.data.data);
         setNewUser({
           name: "",
           email: "",
@@ -204,7 +211,7 @@ function Users(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(`${base_url}/admin/user/${id}`, config);
-    setItem(res.data.data);
+    setSelectedItem(res.data.data);
     console.log("item", res.data.data);
   };
 
@@ -233,9 +240,9 @@ function Users(props) {
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < row.length; i++) {
-          if (row[i].id === id) {
-            row[i] = res.data.data;
+        for (let i = 0; i < users.length; i++) {
+          if (users[i].id === id) {
+            users[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -264,30 +271,31 @@ function Users(props) {
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
       {/* user */}
-      {!loading && (
+      {!loading && !wrongMessage && (
         <div className="users">
           {/* header */}
           <h1 className="header">{t("Users")}</h1>
           {/* upper table */}
-          <AboveTable
+          <UserFilters
             searchRequestControls={searchRequestControls}
             handleSearchReq={handleSearchReq}
-            filterTypes={filterTypes}
+            filterTypes={userAccountTypes}
             handleAdd={handleAdd}
           />
           {/* table */}
-          {row.length !== 0 ? (
+          {users.length !== 0 ? (
             <Table
-              columns={columns}
+              columns={columnsHeader}
               // pagination
-              first={page}
-              rows={rows}
-              totalRecords={totalRowLength}
+              first={pageNumber}
+              rows={rowsPerPage}
+              totalRecords={totalUsersLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {row?.map((item, i) => (
+              {users?.map((item, i) => (
                 <tr key={item.id}>
+                  <td>{i+1}</td>
                   <td className="name">{item.name} </td>
                   <td>{item.email}</td>
                   <td>{item.phone}</td>
@@ -307,13 +315,18 @@ function Users(props) {
 
           {/* modals */}
           {/* show modal */}
-          <ModalShow show={showModal} handleClose={handleClose} item={item} />
+          <ModalShow
+            show={showModal}
+            handleClose={handleClose}
+            item={selectedItem}
+          />
           {/* add modal */}
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
             newUser={newUser}
-            filterTypes={filterTypes}
+            filterTypes={userAccountTypes}
+            handleChange={handleChange}
             handleSubmitAddUsers={handleSubmitAddUsers}
           />
           {/* edit modal */}
@@ -326,6 +339,8 @@ function Users(props) {
           />
         </div>
       )}
+
+      {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }

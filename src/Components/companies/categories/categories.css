@@ -6,3 +6,9 @@
     background-color: rgba(128, 128, 128, 0.581);
     color: red;
 }
+
+.categories .card .table .icons {}
+
+.categories .card .table .icons a {
+    margin-right: 10px;
+}

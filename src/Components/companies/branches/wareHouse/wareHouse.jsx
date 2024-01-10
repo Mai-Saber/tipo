@@ -1,81 +1,87 @@
 import React, { useState, useEffect } from "react";
-import Table from "../../common/table/table";
-import TableFilter from "../../common/tableFilter/tableFilter";
-import "../../common/show modal/showModal.css";
-import Loading from "../../common/loading/loading";
-import NoData from "../../common/noData/noData";
-import TableIcons from "../../common/tableIcons/tableIcons";
-import WrongMessage from "../../common/wrongMessage/wrongMessage";
+
+import NoData from "../../../../common/noData/noData";
+import Table from "../../../../common/table/table";
+import "../../../../common/show modal/showModal.css";
+import TableFilter from "../../../../common/tableFilter/tableFilter";
+import Loading from "../../../../common/loading/loading";
+import TableIcons from "../../../../common/tableIcons/tableIcons";
+import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../service/service";
+
+import axios from "axios";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
+import { useTranslation } from "react-i18next";
 
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
-import axios from "axios";
-import { base_url, config } from "../../service/service";
-import Toastify from "toastify-js";
-import "toastify-js/src/toastify.css";
-import { useTranslation } from "react-i18next";
-
-function Clients(props) {
+function WareHouse(props) {
   const [loading, setLoading] = useState(true);
-    const [wrongMessage, setWrongMessage] = useState(false);
-    const [columnsHeader, setColumnsHeader] = useState([]);
-    const [clients, setClients] = useState([]);
-    const [totalClientsLength, setTotalClientsLength] = useState("");
-    //modals
-    const [showModal, setShowModal] = useState(false);
-    const [addModal, setAddModal] = useState(false);
-    const [editModal, setEditModal] = useState(false);
-    const [selectedItem, setSelectedItem] = useState({});
+  const [wrongMessage, setWrongMessage] = useState(false);
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
+  const [branchId, setBranchID] = useState(props.branchIdInApp);
+  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [WareHouses, setWareHouses] = useState([]);
+  const [totalWareHousesLength, setTotalWareHousesLength] = useState("");
+
+  //modals
+  const [showModal, setShowModal] = useState(false);
+  const [addModal, setAddModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newClient, setNewClient] = useState({
+  const [newWareHouse, setNewWareHouse] = useState({
+    client_id: clientID,
+    company_id: companyID,
+    branch_id: branchId,
     name: "",
-    email: "",
-    phone: "",
-    password: "",
-    address: "",
-    user_account_type_id: "",
-    available_companies_count: "",
-    available_employees_count: "",
-    country_id: "",
-    governorate_id: "",
+    details: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get clients
-    const getClients = async () => {
-      const url = `${base_url}/admin/clients`;
-      await axios
-        .get(url)
-        .then((res) => {
-          setLoading(false);
-          setColumnsHeader(["Id","Name", "Email", "Phone"]);
-          setClients(res.data.data);
-          setTotalClientsLength(res.data.meta?.total);
-        })
-        .catch((err) => {
-          // loading
-          setTimeout(function () {
+    // get WareHouses
+    const getWareHouses = async () => {
+      try {
+        const url = `${base_url}/admin/company/branch/warehouses/${companyID}`;
+        await axios
+          .get(url)
+          .then((res) => {
             setLoading(false);
-          }, 3000);
+            console.log("res", res.data.data);
+            setColumnsHeader(["Id", "company Name", "WareHouse Name"]);
+            setWareHouses(res.data.data);
+            setTotalWareHousesLength(res.data.meta?.total);
+          })
+          .catch((err) => {
+            console.log(err);
+            // loading
+            setTimeout(function () {
+              setLoading(false);
+            }, 3000);
 
-          setWrongMessage(true);
-        });
+            setWrongMessage(true);
+          });
+      } catch (err) {
+        console.log(err);
+      }
     };
     // call functions
-    getClients();
+    getWareHouses();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newClient,
+      ...newWareHouse,
       [e.target.name]: e.target.value,
     };
-    setNewClient(newData);
+    setNewWareHouse(newData);
 
     const newItem = {
       ...editItem,
@@ -84,7 +90,6 @@ function Clients(props) {
     setEditItem(newItem);
   };
 
-  // search & filter
   // search & filter & pagination
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -119,25 +124,28 @@ function Clients(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/clients/search?
+        `${base_url}/admin/company/branch/warehouses/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setClients(res.data.data);
+      setWareHouses(res.data.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   // delete
-  const handleDelete = async (id, name) => {
-    if (window.confirm("Are you Sure?")) {
-      await axios.delete(`${base_url}/admin/user/${id}`, config);
-      const newRow = clients.filter((item) => item.id !== id);
-      setClients(newRow); // setRow(filterItems);
+  const handleDelete = async ({ id, name }) => {
+    if (window.confirm("Are you Sure? ")) {
+      await axios.delete(
+        `${base_url}/admin/company/branch/warehouse/${id}`,
+        config
+      );
+      const newRow = WareHouses.filter((item) => item.id !== id);
+      setWareHouses(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -159,43 +167,26 @@ function Clients(props) {
   // add
   const handleAdd = () => {
     setAddModal(true);
-    setNewClient({
-      name: "",
-      email: "",
-      phone: "",
-      password: "",
-      address: "",
-      user_account_type_id: "",
-      available_companies_count: "",
-      available_employees_count: "",
-      country_id: "",
-      governorate_id: "",
-    });
   };
 
-  const handleSubmitAddClient = async () => {
+  const handleSubmitAddWareHouse = async () => {
     await axios
-      .post(`${base_url}/admin/client`, newClient)
+      .post(`${base_url}/admin/company/branch/warehouse`, newWareHouse)
       .then((res) => {
         Toastify({
-          text: `Client created successfully`,
+          text: `warehouses created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        clients.unshift(res.data.data);
-        setNewClient({
+        WareHouses.unshift(res.data.data);
+        setNewWareHouse({
+          client_id: clientID,
+          company_id: companyID,
+          branch_id: branchId,
           name: "",
-          email: "",
-          phone: "",
-          password: "",
-          address: "",
-          user_account_type_id: sessionStorage.getItem("userAccountTypeId"),
-          available_companies_count: "",
-          available_employees_count: "",
-          country_id: "",
-          governorate_id: "",
+          details: "",
         });
         setAddModal(false);
       })
@@ -214,15 +205,18 @@ function Clients(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/client/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company/branch/warehouse/${id}`,
+      config
+    );
     setSelectedItem(res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    console.log("edit", id);
-    const res = await axios.get(`${base_url}/admin/client/${id}`);
-    console.log("edit", res.data.data);
+    const res = await axios.get(
+      `${base_url}/admin/company/branch/warehouse/${id}`
+    );
     setEditItem(res.data.data);
     setEditModal(true);
   };
@@ -230,23 +224,20 @@ function Clients(props) {
   const handleSubmitEdit = async (id) => {
     const data = {
       name: editItem.name,
-      phone: editItem.phone,
-      password: editItem.password,
-      address: editItem.address,
     };
     await axios
-      .patch(`${base_url}/admin/user/${id}`, data)
+      .patch(`${base_url}/admin/company/branch/warehouse/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `country updated successfully`,
+          text: `Ware House updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < clients.length; i++) {
-          if (clients[i].id === id) {
-            clients[i] = res.data.data;
+        for (let i = 0; i < WareHouses.length; i++) {
+          if (WareHouses[i].id === id) {
+            WareHouses[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -260,7 +251,6 @@ function Clients(props) {
             color: "white",
           },
         }).showToast();
-        console.log(err);
       });
   };
 
@@ -270,16 +260,17 @@ function Clients(props) {
     setAddModal(false);
     setEditModal(false);
   };
-  /////////////////////////////////////////
+  // ////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-      {/* clients */}
+
+      {/* variants */}
       {!loading && !wrongMessage && (
-        <div className="clients">
+        <div className="WareHouse">
           {/* header */}
-          <h1 className="header">{t("Clients")}</h1>
+          <h1 className="header">{t("WareHouses")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -290,26 +281,28 @@ function Clients(props) {
             }
           />
           {/* table */}
-          {clients.length !== 0 ? (
+          {WareHouses.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalClientsLength}
+              totalRecords={totalWareHousesLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {clients?.map((item,i) => (
+              {WareHouses?.map((item, i) => (
                 <tr key={item.id}>
-                  <td>{i+1}</td>
-                  <td className="name">{item.name} </td>
-                  <td>{item.email}</td>
-                  <td>{item.phone}</td>
+                  <td>{i + 1}</td>
+                  <td>{item.company?.name}</td>
+                  <td>{item.name}</td>
 
+                  {/* icons */}
                   <TableIcons
                     item={item}
-                    handleDelete={handleDelete}
+                    handleDelete={() =>
+                      handleDelete({ name: item.name, id: item.id })
+                    }
                     handleEdit={handleEdit}
                     handleShow={handleShow}
                   />
@@ -317,25 +310,22 @@ function Clients(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Client" />
+            <NoData data="WareHouse" />
           )}
           {/* modals */}
           {/* show modal */}
           <ModalShow
             show={showModal}
             handleClose={handleClose}
-            title={selectedItem.name}
             item={selectedItem}
           />
-
           {/* add modal */}
           <ModalAdd
             show={addModal}
+            newWareHouse={newWareHouse}
             handleClose={handleClose}
-            title={t("AddNewClient")}
-            newClient={newClient}
             handleChange={handleChange}
-            handleSubmitAddClient={handleSubmitAddClient}
+            handleSubmitAddWareHouse={handleSubmitAddWareHouse}
           />
           {/* edit modal */}
           <ModalEdit
@@ -343,7 +333,7 @@ function Clients(props) {
             handleClose={handleClose}
             editItem={editItem}
             handleChange={handleChange}
-            handleSubmitEdit={() => handleSubmitEdit(editItem.id)}
+            handleSubmitEdit={handleSubmitEdit}
           />
         </div>
       )}
@@ -353,4 +343,4 @@ function Clients(props) {
   );
 }
 
-export default Clients;
+export default WareHouse;

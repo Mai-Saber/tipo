@@ -1,81 +1,87 @@
 import React, { useState, useEffect } from "react";
-import Table from "../../common/table/table";
-import TableFilter from "../../common/tableFilter/tableFilter";
-import "../../common/show modal/showModal.css";
-import Loading from "../../common/loading/loading";
-import NoData from "../../common/noData/noData";
-import TableIcons from "../../common/tableIcons/tableIcons";
-import WrongMessage from "../../common/wrongMessage/wrongMessage";
 
-import ModalShow from "./modals/show";
-import ModalAdd from "./modals/add";
-import ModalEdit from "./modals/edit";
+import NoData from "../../../../common/noData/noData";
+import Table from "../../../../common/table/table";
+import "../../../../common/show modal/showModal.css";
+import TableFilter from "../../../../common/tableFilter/tableFilter";
+import Loading from "../../../../common/loading/loading";
+import TableIcons from "../../../../common/tableIcons/tableIcons";
+import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../service/service";
 
 import axios from "axios";
-import { base_url, config } from "../../service/service";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
 
-function Clients(props) {
+import ModalShow from "./modals/show";
+import ModalAdd from "./modals/add";
+import ModalEdit from "./modals/edit";
+import { Link } from "react-router-dom";
+
+function Product(props) {
   const [loading, setLoading] = useState(true);
-    const [wrongMessage, setWrongMessage] = useState(false);
-    const [columnsHeader, setColumnsHeader] = useState([]);
-    const [clients, setClients] = useState([]);
-    const [totalClientsLength, setTotalClientsLength] = useState("");
-    //modals
-    const [showModal, setShowModal] = useState(false);
-    const [addModal, setAddModal] = useState(false);
-    const [editModal, setEditModal] = useState(false);
-    const [selectedItem, setSelectedItem] = useState({});
+  const [wrongMessage, setWrongMessage] = useState(false);
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
+  const [categoryId, setCategoryID] = useState(props.categoryIdInApp);
+  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [totalProductsLength, setTotalProductsLength] = useState("");
+
+  //modals
+  const [showModal, setShowModal] = useState(false);
+  const [addModal, setAddModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newClient, setNewClient] = useState({
+  const [newProduct, setNewProduct] = useState({
+    client_id: clientID,
+    company_id: companyID,
+    category_id: categoryId,
     name: "",
-    email: "",
-    phone: "",
-    password: "",
-    address: "",
-    user_account_type_id: "",
-    available_companies_count: "",
-    available_employees_count: "",
-    country_id: "",
-    governorate_id: "",
+    description: "",
+    details: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get clients
-    const getClients = async () => {
-      const url = `${base_url}/admin/clients`;
-      await axios
-        .get(url)
-        .then((res) => {
-          setLoading(false);
-          setColumnsHeader(["Id","Name", "Email", "Phone"]);
-          setClients(res.data.data);
-          setTotalClientsLength(res.data.meta?.total);
-        })
-        .catch((err) => {
-          // loading
-          setTimeout(function () {
+    // get products
+    const getProducts = async () => {
+      try {
+        const url = `${base_url}/admin/company/category/products/${categoryId}`;
+        await axios
+          .get(url)
+          .then((res) => {
             setLoading(false);
-          }, 3000);
+            setColumnsHeader(["Id","product Name"]);
+            setProducts(res.data.data);
+            setTotalProductsLength(res.data.meta?.total);
+          })
+          .catch((err) => {
+            // loading
+            setTimeout(function () {
+              setLoading(false);
+            }, 3000);
 
-          setWrongMessage(true);
-        });
+            setWrongMessage(true);
+          });
+      } catch (err) {
+        console.log(err);
+      }
     };
     // call functions
-    getClients();
+    getProducts();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newClient,
+      ...newProduct,
       [e.target.name]: e.target.value,
     };
-    setNewClient(newData);
+    setNewProduct(newData);
 
     const newItem = {
       ...editItem,
@@ -84,7 +90,6 @@ function Clients(props) {
     setEditItem(newItem);
   };
 
-  // search & filter
   // search & filter & pagination
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -119,14 +124,14 @@ function Clients(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/clients/search?
+        `${base_url}/admin/company/category/products/search/${categoryId}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setClients(res.data.data);
+      setProducts(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -134,10 +139,13 @@ function Clients(props) {
 
   // delete
   const handleDelete = async (id, name) => {
-    if (window.confirm("Are you Sure?")) {
-      await axios.delete(`${base_url}/admin/user/${id}`, config);
-      const newRow = clients.filter((item) => item.id !== id);
-      setClients(newRow); // setRow(filterItems);
+    if (window.confirm("Are you Sure? ")) {
+      await axios.delete(
+        `${base_url}/admin/company/category/product/${id}`,
+        config
+      );
+      const newRow = products.filter((item) => item.id !== id);
+      setProducts(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -159,43 +167,27 @@ function Clients(props) {
   // add
   const handleAdd = () => {
     setAddModal(true);
-    setNewClient({
-      name: "",
-      email: "",
-      phone: "",
-      password: "",
-      address: "",
-      user_account_type_id: "",
-      available_companies_count: "",
-      available_employees_count: "",
-      country_id: "",
-      governorate_id: "",
-    });
   };
 
-  const handleSubmitAddClient = async () => {
+  const handleSubmitAddProduct = async () => {
     await axios
-      .post(`${base_url}/admin/client`, newClient)
+      .post(`${base_url}/admin/company/category/product`, newProduct)
       .then((res) => {
         Toastify({
-          text: `Client created successfully`,
+          text: `Product created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        clients.unshift(res.data.data);
-        setNewClient({
+        products.unshift(res.data.data);
+        setNewProduct({
+          client_id: clientID,
+          company_id: companyID,
+          category_id: categoryId,
           name: "",
-          email: "",
-          phone: "",
-          password: "",
-          address: "",
-          user_account_type_id: sessionStorage.getItem("userAccountTypeId"),
-          available_companies_count: "",
-          available_employees_count: "",
-          country_id: "",
-          governorate_id: "",
+          description: "",
+          details: "",
         });
         setAddModal(false);
       })
@@ -214,15 +206,18 @@ function Clients(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/client/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company/category/product/${id}`,
+      config
+    );
     setSelectedItem(res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    console.log("edit", id);
-    const res = await axios.get(`${base_url}/admin/client/${id}`);
-    console.log("edit", res.data.data);
+    const res = await axios.get(
+      `${base_url}/admin/company/category/product/${id}`
+    );
     setEditItem(res.data.data);
     setEditModal(true);
   };
@@ -230,23 +225,22 @@ function Clients(props) {
   const handleSubmitEdit = async (id) => {
     const data = {
       name: editItem.name,
-      phone: editItem.phone,
-      password: editItem.password,
-      address: editItem.address,
+      details: editItem.details,
+      description: editItem.description,
     };
     await axios
-      .patch(`${base_url}/admin/user/${id}`, data)
+      .patch(`${base_url}/admin/company/category/product/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `country updated successfully`,
+          text: `product updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < clients.length; i++) {
-          if (clients[i].id === id) {
-            clients[i] = res.data.data;
+        for (let i = 0; i < products.length; i++) {
+          if (products[i].id === id) {
+            products[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -260,7 +254,6 @@ function Clients(props) {
             color: "white",
           },
         }).showToast();
-        console.log(err);
       });
   };
 
@@ -270,16 +263,17 @@ function Clients(props) {
     setAddModal(false);
     setEditModal(false);
   };
-  /////////////////////////////////////////
+  // ////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-      {/* clients */}
+
+      {/* variants */}
       {!loading && !wrongMessage && (
-        <div className="clients">
+        <div className="products">
           {/* header */}
-          <h1 className="header">{t("Clients")}</h1>
+          <h1 className="header">{t("Products")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -290,23 +284,37 @@ function Clients(props) {
             }
           />
           {/* table */}
-          {clients.length !== 0 ? (
+          {products.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalClientsLength}
+              totalRecords={totalProductsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {clients?.map((item,i) => (
+              {products?.map((item,i) => (
                 <tr key={item.id}>
                   <td>{i+1}</td>
-                  <td className="name">{item.name} </td>
-                  <td>{item.email}</td>
-                  <td>{item.phone}</td>
-
+                  <td>{item.name}</td>
+                  <td>
+                    <Link
+                      to="/companies/category/product/finalProduct"
+                      className="btn btn-primary"
+                      onClick={() =>
+                        props.handleFinalProducts(
+                          item?.id,
+                          item?.category_id,
+                          item?.client_id,
+                          item?.company_id
+                        )
+                      }
+                    >
+                      {t("FinalProducts")}
+                    </Link>
+                  </td>
+                  {/* icons */}
                   <TableIcons
                     item={item}
                     handleDelete={handleDelete}
@@ -317,25 +325,22 @@ function Clients(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Client" />
+            <NoData data="product" />
           )}
           {/* modals */}
           {/* show modal */}
           <ModalShow
             show={showModal}
             handleClose={handleClose}
-            title={selectedItem.name}
             item={selectedItem}
           />
-
           {/* add modal */}
           <ModalAdd
             show={addModal}
+            newProduct={newProduct}
             handleClose={handleClose}
-            title={t("AddNewClient")}
-            newClient={newClient}
             handleChange={handleChange}
-            handleSubmitAddClient={handleSubmitAddClient}
+            handleSubmitAddBranch={handleSubmitAddProduct}
           />
           {/* edit modal */}
           <ModalEdit
@@ -343,7 +348,7 @@ function Clients(props) {
             handleClose={handleClose}
             editItem={editItem}
             handleChange={handleChange}
-            handleSubmitEdit={() => handleSubmitEdit(editItem.id)}
+            handleSubmitEdit={handleSubmitEdit}
           />
         </div>
       )}
@@ -353,4 +358,4 @@ function Clients(props) {
   );
 }
 
-export default Clients;
+export default Product;

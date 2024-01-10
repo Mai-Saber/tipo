@@ -3,35 +3,36 @@ import React, { useState, useEffect } from "react";
 import Table from "../../common/table/table";
 import Loading from "../../common/loading/loading";
 import "../../common/show modal/showModal.css";
-import NoData from "../../common/no data/noData";
-import TableIcons from "../../common/table icons/tableIcons";
+import NoData from "../../common/noData/noData";
+import TableIcons from "../../common/tableIcons/tableIcons";
+import WrongMessage from "../../common/wrongMessage/wrongMessage";
 import { base_url, config } from "../../service/service";
 
 import axios from "axios";
-import { Link } from "react-router-dom";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
 
-import AboveTable from "./above table/above table";
+import GovernorateFilters from "./governorateFilters/governorateFilters";
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
 function Governorate(props) {
   const [loading, setLoading] = useState(true);
+  const [wrongMessage, setWrongMessage] = useState(false);
   const [filterCountries, setFilterCountries] = useState([]);
   const [currentFilterCountryId, setCurrentFilterCountryId] = useState(
     props.countryInApp
   );
-  const [columns, setColumns] = useState([]);
-  const [row, setRow] = useState([]);
-  const [totalRowLength, setTotalRowLength] = useState("");
+  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [Governorate, setGovernorate] = useState([]);
+  const [totalGovernorateLength, setTotalGovernorateLength] = useState("");
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [item, setItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
   const [newGovernorate, setNewGovernorate] = useState({
     name: "",
@@ -41,23 +42,27 @@ function Governorate(props) {
   });
   const { t } = useTranslation();
 
-  // pagination
-
   // general
   useEffect(() => {
-    // loading
-    setTimeout(function () {
-      setLoading(false);
-    }, 3000);
-
     // get Governorate
     const getGovernorate = async () => {
       const url = `${base_url}/admin/governorates-search-all`;
-      const res = await axios.get(url);
-      console.log(res.data.data);
-      setColumns(["Name", "ArabicName", "Prefix"]);
-      setRow(res.data.data);
-      setTotalRowLength(res.data.meta?.total);
+      await axios
+        .get(url)
+        .then((res) => {
+          setLoading(false);
+          setColumnsHeader(["Id", "Name", "ArabicName", "Prefix"]);
+          setGovernorate(res.data.data);
+          setTotalGovernorateLength(res.data.meta?.total);
+        })
+        .catch((err) => {
+          // loading
+          setTimeout(function () {
+            setLoading(false);
+          }, 3000);
+
+          setWrongMessage(true);
+        });
     };
     // get filter countries
     const filterCountries = async () => {
@@ -66,12 +71,12 @@ function Governorate(props) {
     };
     // setRowBasedOnFilter
     const setRowBasedOnFilter = async () => {
-      console.log("cc", currentFilterCountryId);
       if (currentFilterCountryId) {
         await axios
           .get(`${base_url}/admin/governorates/${currentFilterCountryId}`)
           .then((res) => {
-            setRow(res.data.data);
+            console.log("bb");
+            setGovernorate(res.data.data);
           })
           .catch((err) => {
             console.log("err", err);
@@ -87,8 +92,8 @@ function Governorate(props) {
 
   // search & filter
 
-  const [rows, setRows] = useState(10);
-  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
     queryString: "",
     filterType: "",
@@ -97,8 +102,8 @@ function Governorate(props) {
   });
 
   const onPageChange = (e) => {
-    setRows(e.rows);
-    setPage(e.page + 1);
+    setRowsPerPage(e.rows);
+    setPageNumber(e.page + 1);
 
     handleSearchReq(e, {
       perPage: e.rows,
@@ -126,7 +131,7 @@ function Governorate(props) {
           &page=${pageNumber || ""}
     `
       );
-      setRow(res.data.data);
+      setGovernorate(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -151,8 +156,8 @@ function Governorate(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(`${base_url}/admin/governorate/${id}`, config);
-      const newRow = row.filter((item) => item.id !== id);
-      setRow(newRow); // setRow(filterItems);
+      const newRow = Governorate.filter((item) => item.id !== id);
+      setGovernorate(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -188,7 +193,7 @@ function Governorate(props) {
             color: "white",
           },
         }).showToast();
-        row.unshift(res.data.data);
+        Governorate.unshift(res.data.data);
         setNewGovernorate({
           name: "",
           name_ar: "",
@@ -213,7 +218,7 @@ function Governorate(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(`${base_url}/admin/governorate/${id}`, config);
-    setItem(res.data.data);
+    setSelectedItem(res.data.data);
   };
 
   // edit
@@ -241,9 +246,9 @@ function Governorate(props) {
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < row.length; i++) {
-          if (row[i].id === id) {
-            row[i] = res.data.data;
+        for (let i = 0; i < Governorate.length; i++) {
+          if (Governorate[i].id === id) {
+            Governorate[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -274,30 +279,31 @@ function Governorate(props) {
       {loading && <Loading></Loading>}
 
       {/* governorate */}
-      {!loading && (
+      {!loading && !wrongMessage && (
         <div className="governorate">
           {/* header */}
           <h1 className="header">{t("Governorate")}</h1>
           {/* upper table */}
-          <AboveTable
+          <GovernorateFilters
             searchRequestControls={searchRequestControls}
             handleSearchReq={handleSearchReq}
             filterCountries={filterCountries}
             handleAdd={handleAdd}
           />
           {/* table */}
-          {row.length !== 0 ? (
+          {Governorate.length !== 0 ? (
             <Table
-              columns={columns}
+              columns={columnsHeader}
               // pagination
-              first={page}
-              rows={rows}
-              totalRecords={totalRowLength}
+              first={pageNumber}
+              rows={rowsPerPage}
+              totalRecords={totalGovernorateLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {row?.map((item) => (
+              {Governorate?.map((item, i) => (
                 <tr key={item.id}>
+                  <td>{i + 1}</td>
                   <td className="name">{item.name} </td>
                   <td>{item.name_ar} </td>
                   <td>{item.prefix}</td>
@@ -317,13 +323,18 @@ function Governorate(props) {
 
           {/* modals */}
           {/* show modal */}
-          <ModalShow show={showModal} handleClose={handleClose} item={item} />
+          <ModalShow
+            show={showModal}
+            handleClose={handleClose}
+            item={selectedItem}
+          />
           {/* add modal */}
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
             newGovernorate={newGovernorate}
             handleSubmitAddGovernorate={handleSubmitAddGovernorate}
+            handleChange={handleChange}
           />
           {/* edit modal */}
           <ModalEdit
@@ -335,6 +346,8 @@ function Governorate(props) {
           />
         </div>
       )}
+
+      {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }

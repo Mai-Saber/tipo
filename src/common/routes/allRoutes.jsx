@@ -12,9 +12,30 @@ function AllRoutes(props) {
       ,
       <Route path="/companies/variants" element={props.variantsEle} />
       ,
+      <Route path="/companies/priceList" element={props.priceListEle} />
+      ,
+      <Route path="/companies/contacts" element={props.contactsEle} />
+      ,
+      <Route
+        path="/companies/variants/values"
+        element={props.variantsValueEle}
+      />
+      ,
       <Route path="/companies/branches" element={props.branchesEle} />
       ,
+      <Route
+        path="/companies/branches/wareHouse"
+        element={props.wareHouseEle}
+      />
+      ,
       <Route path="/companies/categories" element={props.categoriesEle} />
+      ,
+      <Route path="/companies/category/product" element={props.productEle} />
+      ,
+      <Route
+        path="/companies/category/product/finalProduct"
+        element={props.finalProductEle}
+      />
       ,
       <Route path="/users" element={props.userEle} />
       ,

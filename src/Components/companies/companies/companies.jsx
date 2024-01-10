@@ -3,13 +3,14 @@ import React, { useState, useEffect } from "react";
 import Table from "../../../common/table/table";
 import "../../../common/show modal/showModal.css";
 import Loading from "../../../common/loading/loading";
-import NoData from "../../../common/no data/noData";
-import TableIcons from "../../../common/table icons/tableIcons";
+import NoData from "../../../common/noData/noData";
+import TableIcons from "../../../common/tableIcons/tableIcons";
+import WrongMessage from "../../../common/wrongMessage/wrongMessage";
 import { base_url, config } from "../../../service/service";
 
 import "./companies.css";
 import Buttons from "./buttons/buttons";
-import AboveTable from "./above table/above table";
+import CompaniesFilters from "./companiesFilters/companiesFilters";
 
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -21,15 +22,16 @@ import ModalEdit from "./modals/edit";
 
 function Companies(props) {
   const [loading, setLoading] = useState(true);
+  const [wrongMessage, setWrongMessage] = useState(false);
   const [filterClients, setFilterClients] = useState([]);
-  const [columns, setColumns] = useState([]);
-  const [row, setRow] = useState([]);
-  const [totalRowLength, setTotalRowLength] = useState("");
+  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [totalCompaniesLength, setTotalCompaniesLength] = useState("");
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [item, setItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
   const [newCompany, setNewCompany] = useState({
     name: "",
@@ -39,18 +41,25 @@ function Companies(props) {
 
   // general
   useEffect(() => {
-    // loading
-    setTimeout(function () {
-      setLoading(false);
-    }, 3000);
-
     // get companies
     const getCompanies = async () => {
       const url = `${base_url}/admin/companies`;
-      const res = await axios.get(url);
-      setColumns(["Name", "Id","","",""]);
-      setRow(res.data.data);
-      setTotalRowLength(res.data.meta?.total);
+      await axios
+        .get(url)
+        .then((res) => {
+          setLoading(false);
+          setColumnsHeader(["Id","Name","Pages"]);
+          setCompanies(res.data.data);
+          setTotalCompaniesLength(res.data.meta?.total);
+        })
+        .catch((err) => {
+          // loading
+          setTimeout(function () {
+            setLoading(false);
+          }, 3000);
+
+          setWrongMessage(true);
+        });
     };
 
     // get filter countries
@@ -82,8 +91,8 @@ function Companies(props) {
   // search & filter
   // search & filter & pagination
 
-  const [rows, setRows] = useState(10);
-  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
     queryString: "",
     filterType: "",
@@ -92,8 +101,8 @@ function Companies(props) {
   });
 
   const onPageChange = (e) => {
-    setRows(e.rows);
-    setPage(e.page + 1);
+    setRowsPerPage(e.rows);
+    setPageNumber(e.page + 1);
 
     handleSearchReq(e, {
       perPage: e.rows,
@@ -121,7 +130,7 @@ function Companies(props) {
           &page=${pageNumber || ""}
     `
       );
-      setRow(res.data.data);
+      setCompanies(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -131,8 +140,8 @@ function Companies(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(`${base_url}/admin/company/${id}`, config);
-      const newRow = row.filter((item) => item.id !== id);
-      setRow(newRow); // setRow(filterItems);
+      const newRow = companies.filter((item) => item.id !== id);
+      setCompanies(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -167,7 +176,7 @@ function Companies(props) {
             color: "white",
           },
         }).showToast();
-        row.unshift(res.data.data);
+        companies.unshift(res.data.data);
         setNewCompany({
           name: "",
           client_id: "",
@@ -190,7 +199,7 @@ function Companies(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(`${base_url}/admin/company/${id}`, config);
-    setItem(res.data.data);
+    setSelectedItem(res.data.data);
   };
 
   // edit
@@ -214,9 +223,9 @@ function Companies(props) {
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < row.length; i++) {
-          if (row[i].id === id) {
-            row[i] = res.data.data;
+        for (let i = 0; i < companies.length; i++) {
+          if (companies[i].id === id) {
+            companies[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -246,38 +255,40 @@ function Companies(props) {
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
       {/* companies */}
-      {!loading && (
+      {!loading && !wrongMessage && (
         <div className="companies">
           {/* header */}
           <h1 className="header">{t("Companies")}</h1>
           {/* upper table */}
-          <AboveTable
+          <CompaniesFilters
             searchRequestControls={searchRequestControls}
             filterClients={filterClients}
             handleSearchReq={handleSearchReq}
             handleAdd={handleAdd}
           />
           {/* table */}
-          {row.length !== 0 ? (
+          {companies.length !== 0 ? (
             <Table
-              columns={columns}
+              columns={columnsHeader}
               // pagination
-              first={page}
-              rows={rows}
-              totalRecords={totalRowLength}
+              first={pageNumber}
+              rows={rowsPerPage}
+              totalRecords={totalCompaniesLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {row?.map((item) => (
+              {companies?.map((item, i) => (
                 <tr key={item.id}>
+                  <td>{i + 1}</td>
                   <td className="name">{item.name} </td>
-                  <td>{item.id.slice(0, 8)}...</td>
                   {/* buttons */}
                   <Buttons
                     item={item}
                     handleVariant={props.handleVariant}
                     handleBranches={props.handleBranches}
+                    handleContacts={props.handleContacts}
                     handleCategories={props.handleCategories}
+                    handlePriceList={props.handlePriceList}
                   />
                   {/* icons */}
                   <TableIcons
@@ -294,7 +305,11 @@ function Companies(props) {
           )}
           {/* modals */}
           {/* show modal */}
-          <ModalShow show={showModal} handleClose={handleClose} item={item} />
+          <ModalShow
+            show={showModal}
+            handleClose={handleClose}
+            item={selectedItem}
+          />
           {/* add modal */}
           <ModalAdd
             show={addModal}
@@ -313,6 +328,8 @@ function Companies(props) {
           />
         </div>
       )}
+      {/* WrongMessage */}
+      {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }

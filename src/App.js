@@ -2,19 +2,24 @@ import React, { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 
 import Login from "./Components/login/login";
-import NavBar from "./Components/nav bar/navbar";
-import SideBar from "./Components/side bar/sidebar";
+import NavBar from "./Components/navBar/navBar";
+import SideBar from "./Components/sideBar/sideBar";
 import Countries from "./Components/countries/countries";
 import User from "./Components/user/user";
 import Clients from "./Components/clients/clients";
 import Companies from "./Components/companies/companies/companies";
 import NotFound from "./Components/notFound/notFound";
-import Branches from "./Components/companies/Branches/branches";
-import Variants from "./Components/companies/variants/variants";
+import Branches from "./Components/companies/branches/branches";
+import Variants from "./Components/companies/variants/variants/variants";
 import Governorate from "./Components/Governorates/Governorates";
 import Categories from "./Components/companies/categories/categories";
+import VariantValue from "./Components/companies/variants/variantsValue/variantsValue";
+import FinalProduct from "./Components/companies/categories/product/finalProduct/finalProduct";
+import Product from "./Components/companies/categories/product/product";
+import PriceList from "./Components/companies/priceList/priceList/priceList";
 import "./common/language/language.css";
 import i18n from "./common/language/i18n";
+import AllRoutes from "./common/routes/allRoutes";
 import "animate.css";
 import "./App.css";
 
@@ -28,7 +33,8 @@ import { PrimeReactProvider } from "primereact/api";
 import "primereact/resources/themes/lara-light-indigo/theme.css"; // theme
 import "primeicons/primeicons.css";
 import "primereact/resources/primereact.css";
-import AllRoutes from "./common/routes/allRoutes";
+import Contact from "./Components/companies/contact/contact";
+import WareHouse from "./Components/companies/branches/wareHouse/wareHouse";
 
 // /////////////////////////////////////////
 const token = sessionStorage.getItem("token");
@@ -75,15 +81,15 @@ axios.interceptors.response.use(null, (error) => {
 function App() {
   const [countryId, setCountryId] = useState("");
   const [companyID, setCompanyId] = useState("");
+  const [variantId, setVariantId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [clientId, setClientId] = useState("");
+  const [productId, setProductId] = useState("");
+  const [branchId, setBranchId] = useState("");
 
   useEffect(() => {
     const dir = i18n.dir(i18n.lng);
     document.getElementsByTagName("html")[0].setAttribute("dir", dir);
-    console.log(
-      "atr",
-      document.getElementsByTagName("html")[0].attributes[1] === "rtl"
-    );
   }, [i18n, i18n.lng]);
 
   const handleGovernorate = (id) => {
@@ -94,12 +100,53 @@ function App() {
     setCompanyId(id);
     setClientId(clientId);
   };
+
+  const handlePriceList = (id, clientId) => {
+    setCompanyId(id);
+    setClientId(clientId);
+  };
+
   const handleVariant = (id, clientId) => {
     setCompanyId(id);
     setClientId(clientId);
   };
 
+  const handleVariantsValue = (id, clientId, companyID) => {
+    console.log(id, clientId, companyID);
+    setVariantId(id);
+    setClientId(clientId);
+    setCompanyId(companyID);
+  };
+
+  const handleWareHouse = (id, companyID, clientId) => {
+    console.log("handleWareHouse", `id:${id}`, `client:${clientId}`, companyID);
+    setBranchId(id);
+    setClientId(clientId);
+    setCompanyId(companyID);
+  };
+
+  const handleProducts = (id, clientId, companyID) => {
+    console.log(id, clientId, companyID);
+    setCategoryId(id);
+    setClientId(clientId);
+    setCompanyId(companyID);
+  };
+
+  const handleFinalProducts = (id, categoryId, clientId, companyID) => {
+    console.log(id, categoryId, clientId, companyID);
+    setProductId(id);
+    setCategoryId(categoryId);
+    setClientId(clientId);
+    setCompanyId(companyID);
+  };
+
   const handleCategories = (id, clientId) => {
+    setCompanyId(id);
+    setClientId(clientId);
+  };
+
+  const handleContacts = (id, clientId) => {
+    console.log(`id:${id}`, `client:${clientId}`);
     setCompanyId(id);
     setClientId(clientId);
   };
@@ -135,14 +182,39 @@ function App() {
                     ///
                     companiesEle={
                       <Companies
-                        handleBranches={handleBranches}
                         handleVariant={handleVariant}
+                        handleBranches={handleBranches}
                         handleCategories={handleCategories}
+                        handlePriceList={handlePriceList}
+                        handleContacts={handleContacts}
                       />
                     }
                     ///
                     variantsEle={
                       <Variants
+                        handleVariantValue={handleVariantsValue}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    variantsValueEle={
+                      <VariantValue
+                        variantIdInApp={variantId}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    priceListEle={
+                      <PriceList
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    contactsEle={
+                      <Contact
                         companyIDInApp={companyID}
                         clientIdInApp={clientId}
                       />
@@ -150,6 +222,15 @@ function App() {
                     ///
                     branchesEle={
                       <Branches
+                        handleWareHouse={handleWareHouse}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    wareHouseEle={
+                      <WareHouse
+                        branchIdInApp={branchId}
                         companyIDInApp={companyID}
                         clientIdInApp={clientId}
                       />
@@ -157,6 +238,25 @@ function App() {
                     ///
                     categoriesEle={
                       <Categories
+                        handleProducts={handleProducts}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    productEle={
+                      <Product
+                        handleFinalProducts={handleFinalProducts}
+                        categoryIdInApp={categoryId}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    finalProductEle={
+                      <FinalProduct
+                      productIdInApp={productId}
+                      categoryIdInApp={categoryId}
                         companyIDInApp={companyID}
                         clientIdInApp={clientId}
                       />

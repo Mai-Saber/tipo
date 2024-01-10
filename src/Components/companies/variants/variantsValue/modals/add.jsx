@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-bootstrap/Modal";
-import { TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Button from "react-bootstrap/Button";
-import { base_url } from "../../../../service/service";
+import { TextField } from "@mui/material";
 import axios from "axios";
+import { base_url } from "../../../../../service/service";
 
 function ModalAdd(props) {
   const { t } = useTranslation();
   const [company, setCompany] = useState("");
   const [client, setClient] = useState("");
-  const [category, setCategory] = useState("");
+  const [variant, setVariant] = useState("");
 
   useEffect(() => {
     const getCompany = async () => {
       await axios
-        .get(`${base_url}/admin/company/${props.newCategory?.company_id}`)
+        .get(`${base_url}/admin/company/${props.newVariant?.company_id}`)
         .then((res) => {
           setCompany(res.data.data.name);
         })
@@ -24,21 +24,33 @@ function ModalAdd(props) {
 
     const getCLient = async () => {
       await axios
-        .get(`${base_url}/admin/client/${props.newCategory?.client_id}`)
+        .get(`${base_url}/admin/client/${props.newVariant?.client_id}`)
         .then((res) => {
           setClient(res.data.data.name);
         })
         .catch();
     };
 
+    const getVariant = async () => {
+      await axios
+        .get(
+          `${base_url}/admin/company/variant/${props.newVariant?.variant_id}`
+        )
+        .then((res) => {
+          setVariant(res.data.data.name);
+        })
+        .catch();
+    };
+    
     getCompany();
     getCLient();
+    getVariant();
   }, []);
 
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title> {t("AddNewCategory")}</Modal.Title>
+        <Modal.Title> {t("AddNewVariantValue")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">
@@ -49,8 +61,8 @@ function ModalAdd(props) {
             variant="outlined"
             type="text"
             label={t("Name")}
-            name="name"
-            value={props.newCategory?.name}
+            name="value"
+            value={props.newVariant?.value}
             onChange={props.handleChange}
           />
           <TextField
@@ -58,17 +70,10 @@ function ModalAdd(props) {
             id="outlined-basic"
             variant="outlined"
             type="text"
-            label={
-              props.newCategory?.category_id ? t("Category") : t("Category_id")
-            }
-            name="category_id"
-            value={
-              props.newCategory?.category_id
-                ? props.categoryName
-                : props.newCategory?.category_id
-            }
+            label={t("Variant")}
+            name="variant_id"
+            value={variant}
           />
-
           <TextField
             className="input"
             id="outlined-basic"
@@ -100,7 +105,7 @@ function ModalAdd(props) {
         <Button
           className="btn btn-primary"
           variant="primary"
-          onClick={props.handleSubmitAddCategory}
+          onClick={props.handleSubmitAddBranch}
         >
           {t("Save")}
         </Button>
