@@ -35,6 +35,7 @@ import "primeicons/primeicons.css";
 import "primereact/resources/primereact.css";
 import Contact from "./Components/companies/contact/contact";
 import WareHouse from "./Components/companies/branches/wareHouse/wareHouse";
+import FinalProductVariantValues from "./Components/companies/categories/product/finalProduct/variantValue/variantValues";
 
 // /////////////////////////////////////////
 const token = sessionStorage.getItem("token");
@@ -86,6 +87,7 @@ function App() {
   const [clientId, setClientId] = useState("");
   const [productId, setProductId] = useState("");
   const [branchId, setBranchId] = useState("");
+  const [finalProductId, setFinalProductId] = useState("");
 
   useEffect(() => {
     const dir = i18n.dir(i18n.lng);
@@ -137,6 +139,11 @@ function App() {
     setProductId(id);
     setCategoryId(categoryId);
     setClientId(clientId);
+    setCompanyId(companyID);
+  };
+
+  const handleFinalProductsVariantValue = (id, companyID) => {
+    setFinalProductId(id);
     setCompanyId(companyID);
   };
 
@@ -255,10 +262,20 @@ function App() {
                     ///
                     finalProductEle={
                       <FinalProduct
-                      productIdInApp={productId}
-                      categoryIdInApp={categoryId}
+                        handleFinalProductsVariantValue={
+                          handleFinalProductsVariantValue
+                        }
+                        productIdInApp={productId}
+                        categoryIdInApp={categoryId}
                         companyIDInApp={companyID}
                         clientIdInApp={clientId}
+                      />
+                    }
+                    ///
+                    finalProductVariantValueEle={
+                      <FinalProductVariantValues
+                        finalProductIDInApp={finalProductId}
+                        companyIDInApp={companyID}
                       />
                     }
                     ///

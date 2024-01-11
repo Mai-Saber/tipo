@@ -37,6 +37,11 @@ function AllRoutes(props) {
         element={props.finalProductEle}
       />
       ,
+      <Route
+        path="/companies/category/product/finalProduct/variantValue"
+        element={props.finalProductVariantValueEle}
+      />
+      ,
       <Route path="/users" element={props.userEle} />
       ,
       <Route path="/clients" element={props.clientsEle} />

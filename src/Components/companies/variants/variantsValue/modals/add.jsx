@@ -17,7 +17,7 @@ function ModalAdd(props) {
       await axios
         .get(`${base_url}/admin/company/${props.newVariant?.company_id}`)
         .then((res) => {
-          setCompany(res.data.data.name);
+          setCompany(res.data?.data.name);
         })
         .catch();
     };
@@ -26,7 +26,7 @@ function ModalAdd(props) {
       await axios
         .get(`${base_url}/admin/client/${props.newVariant?.client_id}`)
         .then((res) => {
-          setClient(res.data.data.name);
+          setClient(res.data?.data.name);
         })
         .catch();
     };
@@ -37,7 +37,7 @@ function ModalAdd(props) {
           `${base_url}/admin/company/variant/${props.newVariant?.variant_id}`
         )
         .then((res) => {
-          setVariant(res.data.data.name);
+          setVariant(res.data?.data.name);
         })
         .catch();
     };

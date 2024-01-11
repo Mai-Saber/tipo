@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-import NoData from "../../../../../common/noData/noData";
-import Table from "../../../../../common/table/table";
-import "../../../../../common/show modal/showModal.css";
-import TableFilter from "../../../../../common/tableFilter/tableFilter";
-import Loading from "../../../../../common/loading/loading";
-import TableIcons from "../../../../../common/tableIcons/tableIcons";
-import WrongMessage from "../../../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../../../service/service";
+import NoData from "../../../../../../common/noData/noData";
+import Table from "../../../../../../common/table/table";
+import "../../../../../../common/show modal/showModal.css";
+import TableFilter from "../../../../../../common/tableFilter/tableFilter";
+import Loading from "../../../../../../common/loading/loading";
+import TableIcons from "../../../../../../common/tableIcons/tableIcons";
+import WrongMessage from "../../../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -17,18 +17,17 @@ import { useTranslation } from "react-i18next";
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
-import { Link } from "react-router-dom";
 
-function FinalProduct(props) {
+function FinalProductVariantValues(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
-  const [clientID, setClientID] = useState(props.clientIdInApp);
-  const [productId, setProductID] = useState(props.productIdInApp);
-  const [categoryId, setCategoryId] = useState(props.categoryIdInApp);
+  const [finalProductId, setFinalProductId] = useState(
+    props.finalProductIDInApp
+  );
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [finalProducts, setFinalProducts] = useState([]);
-  const [totalFinalProductsLength, setTotalFinalProductsLength] = useState("");
+  const [variantValues, setVariantValues] = useState([]);
+  const [totalProductsLength, setTotalProductsLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
@@ -36,54 +35,55 @@ function FinalProduct(props) {
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newFinalProduct, setNewFinalProduct] = useState({
-    client_id: clientID,
-    company_id: companyID,
-    category_id: categoryId,
-    product_id: productId,
+  const [newVariantValue, setNewVariantValue] = useState({
+    final_product_id: finalProductId,
+    variant_id: "",
+    variant_value_id: "",
     details: "",
-    variants: [],
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get products
-    const getProducts = async () => {
-      try {
-        const url = `${base_url}/admin/company/category/product/final-products/${productId}`;
-        await axios
-          .get(url)
-          .then((res) => {
-            setLoading(false);
-
-            setColumnsHeader(["Id", "Details"]);
-            setFinalProducts(res.data?.data);
-            setTotalFinalProductsLength(res.data?.meta?.total);
-          })
-          .catch((err) => {
-            // loading
-            setTimeout(function () {
+    try {
+      // get variantsValue
+      const getVariantValues = async () => {
+        try {
+          const url = `${base_url}/admin/company/category/product/final-product-variant-values/${finalProductId}`;
+          await axios
+            .get(url)
+            .then((res) => {
               setLoading(false);
-            }, 3000);
+              setColumnsHeader(["Id", "Name"]);
+              setVariantValues(res.data?.data);
+              setTotalProductsLength(res.data.meta?.total);
+            })
+            .catch((err) => {
+              // loading
+              setTimeout(function () {
+                setLoading(false);
+              }, 3000);
 
-            setWrongMessage(true);
-          });
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    // call functions
-    getProducts();
+              setWrongMessage(true);
+            });
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      // call functions
+      getVariantValues();
+    } catch (err) {
+      console.log(err);
+    }
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newFinalProduct,
+      ...newVariantValue,
       [e.target.name]: e.target.value,
     };
-    setNewFinalProduct(newData);
+    setNewVariantValue(newData);
 
     const newItem = {
       ...editItem,
@@ -126,14 +126,14 @@ function FinalProduct(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/category/product/final-products/search/${productId}?
+        `${base_url}/admin/company/category/product/final-product-variant-values/search/${finalProductId}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setFinalProducts(res.data.data);
+      setVariantValues(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -143,11 +143,11 @@ function FinalProduct(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/category/product/final-product/${id}`,
+        `${base_url}/admin/company/category/product/final-product-variant-value/${id}`,
         config
       );
-      const newRow = finalProducts.filter((item) => item.id !== id);
-      setFinalProducts(newRow); // setRow(filterItems);
+      const newRow = variantValues.filter((item) => item.id !== id);
+      setVariantValues(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -171,28 +171,36 @@ function FinalProduct(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddProduct = async () => {
-    console.log("newww", newFinalProduct);
+  const handleSubmitAddFinalProductVariantValue = async () => {
+    const data = {
+      final_product_id: finalProductId,
+      variants: [
+        {
+          variant_id: newVariantValue.variant_id,
+          variant_value_id: newVariantValue.variant_value_id,
+          details: newVariantValue.details,
+        },
+      ],
+    };
+
+    console.log(data);
+
     await axios
       .post(
-        `${base_url}/admin/company/category/product/final-product`,
-        newFinalProduct
+        `${base_url}/admin/company/category/product/final-product-variant-value`,
+        data
       )
       .then((res) => {
         Toastify({
-          text: `final Product created successfully `,
+          text: `variant Value created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        finalProducts.unshift(res.data.data);
-        setNewFinalProduct({
-          client_id: clientID,
-          company_id: companyID,
-          category_id: categoryId,
-          product_id: productId,
-          details: "",
+        variantValues.unshift(res.data.data);
+        setNewVariantValue({
+          final_product_id: finalProductId,
           variants: [],
         });
         setAddModal(false);
@@ -213,19 +221,19 @@ function FinalProduct(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/category/product/final-product/${id}`,
+      `${base_url}/admin/company/category/product/final-product-variant-value/${id}`,
       config
     );
+    console.log("show",res.data.data);
     setSelectedItem(res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
     const res = await axios.get(
-      `${base_url}/admin/company/category/product/final-product/${id}`
+      `${base_url}/admin/company/category/product/final-product-variant-value/${id}`
     );
     setEditItem(res.data.data);
-    console.log("res", res.data.data);
     setEditModal(true);
   };
 
@@ -235,20 +243,20 @@ function FinalProduct(props) {
     };
     await axios
       .patch(
-        `${base_url}/admin/company/category/product/final-product/${id}`,
+        `${base_url}/admin/company/category/product/final-product-variant-value/${id}`,
         data
       )
       .then((res) => {
         Toastify({
-          text: `product updated successfully`,
+          text: `Variant Value updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < finalProducts.length; i++) {
-          if (finalProducts[i].id === id) {
-            finalProducts[i] = res.data.data;
+        for (let i = 0; i < variantValues.length; i++) {
+          if (variantValues[i].id === id) {
+            variantValues[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -279,9 +287,9 @@ function FinalProduct(props) {
 
       {/* variants */}
       {!loading && !wrongMessage && (
-        <div className="products">
+        <div className="FinalProductVariantValues">
           {/* header */}
-          <h1 className="header">{t("FinalProducts")}</h1>
+          <h1 className="header">{t("FinalProductVariantValues")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -292,34 +300,20 @@ function FinalProduct(props) {
             }
           />
           {/* table */}
-          {finalProducts.length !== 0 ? (
+          {variantValues.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalFinalProductsLength}
+              totalRecords={totalProductsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {finalProducts?.map((item, i) => (
+              {variantValues?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
-                  <td>{item?.details}</td>
-                  <td>
-                    <Link
-                      to="/companies/category/product/finalProduct/variantValue"
-                      className="btn btn-primary"
-                      onClick={() =>
-                        props.handleFinalProductsVariantValue(
-                          item?.id,
-                          item.company_id
-                        )
-                      }
-                    >
-                      {t("VariantValue")}
-                    </Link>
-                  </td>
+                  <td>{item.details}</td>
 
                   {/* icons */}
                   <TableIcons
@@ -332,7 +326,7 @@ function FinalProduct(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="final product" />
+            <NoData data="Variant Value" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -344,16 +338,19 @@ function FinalProduct(props) {
           {/* add modal */}
           <ModalAdd
             show={addModal}
-            newFinalProduct={newFinalProduct}
+            companyId={companyID}
+            newVariantValue={newVariantValue}
             handleClose={handleClose}
             handleChange={handleChange}
-            handleSubmitAddFinalProduct={handleSubmitAddProduct}
+            handleSubmitAddFinalProductVariantValue={
+              handleSubmitAddFinalProductVariantValue
+            }
           />
           {/* edit modal */}
           <ModalEdit
             show={editModal}
-            editItem={editItem}
             handleClose={handleClose}
+            editItem={editItem}
             handleChange={handleChange}
             handleSubmitEdit={handleSubmitEdit}
           />
@@ -365,4 +362,4 @@ function FinalProduct(props) {
   );
 }
 
-export default FinalProduct;
+export default FinalProductVariantValues;

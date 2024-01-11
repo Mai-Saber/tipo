@@ -100,6 +100,8 @@ i18n
           EditProduct: "Edit Product",
           ///Final Products
           FinalProducts: "Final Products",
+          FinalProduct: "Final Product",
+          EditFinalProduct: "Edit Final Product",
           // PriceList
           PriceList: "Price List",
           AddNewPriceList: "Add New Price List",
@@ -111,6 +113,9 @@ i18n
           WareHouses: "WareHouses",
           AddNewWareHouse: "Add New WareHouse",
           EditWareHouse: "Edit WareHouse",
+          // Final Product Variant Value
+          FinalProductVariantValues: "Final Product Variant Values",
+          FinalProductId: "Final Product Id",
         },
       },
       ar: {
@@ -201,7 +206,9 @@ i18n
           Description: "الوصف",
           EditProduct: "تعديل منتج",
           // FinalProducts
-          FinalProducts: "المنتج الاخير",
+          FinalProducts: "المنتجات النهائية",
+          FinalProduct: "المنتج النهائي",
+          EditFinalProduct: "تعديل المنتج النهائي",
           // PriceList
           PriceList: "قائمة اسعار",
           AddNewPriceList: "اضافة قائمة اسعار جديدة",
@@ -212,7 +219,10 @@ i18n
           // WareHouse
           WareHouse: "مخزن",
           AddNewWareHouse: "اضافة مخزن جديد",
-          EditWareHouse:"تعديل مخزن "
+          EditWareHouse: "تعديل مخزن ",
+          // FinalProductVariantValue
+          FinalProductVariantValues: "قيم الاصناف في المنتج النهائي",
+          FinalProductId:"الرقم االتعريفي للمنتج النهائي",
         },
       },
     },

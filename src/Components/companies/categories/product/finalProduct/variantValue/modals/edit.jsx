@@ -10,7 +10,7 @@ function ModalEdit(props) {
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title>{t("EditFinalProduct")}</Modal.Title>
+        <Modal.Title>{t("EditVariantValue")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">

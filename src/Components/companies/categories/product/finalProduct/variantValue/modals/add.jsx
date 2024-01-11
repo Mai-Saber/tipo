@@ -4,78 +4,40 @@ import { useTranslation } from "react-i18next";
 import Button from "react-bootstrap/Button";
 import { TextField } from "@mui/material";
 import axios from "axios";
-import { base_url } from "../../../../../../service/service";
+import { base_url } from "../../../../../../../service/service";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { Col, Row } from "react-bootstrap";
 
 function ModalAdd(props) {
   const { t } = useTranslation();
-  const [company, setCompany] = useState("");
-  const [client, setClient] = useState("");
-  const [category, setCategory] = useState("");
-  const [product, setProduct] = useState("");
+  const [finalProduct, setFinalProduct] = useState("");
   const [variants, setVariants] = useState([]);
   const [variantValue, setVariantValue] = useState([]);
 
   useEffect(() => {
-    const getCompany = async () => {
-      await axios
-        .get(`${base_url}/admin/company/${props.newFinalProduct?.company_id}`)
-        .then((res) => {
-          setCompany(res.data.data.name);
-        })
-        .catch();
-    };
-
-    const getCLient = async () => {
-      await axios
-        .get(`${base_url}/admin/client/${props.newFinalProduct?.client_id}`)
-        .then((res) => {
-          setClient(res.data.data.name);
-        })
-        .catch();
-    };
-
-    const getCategory = async () => {
+    const getFinalProduct = async () => {
       await axios
         .get(
-          `${base_url}/admin/company/category/${props.newFinalProduct?.category_id}`
+          `${base_url}/admin/company/category/product/final-product/${props.newVariantValue?.final_product_id}`
         )
         .then((res) => {
-          setCategory(res.data.data.data.name);
-        })
-        .catch();
-    };
-
-    const getProduct = async () => {
-      await axios
-        .get(
-          `${base_url}/admin/company/category/product/${props.newFinalProduct?.product_id}`
-        )
-        .then((res) => {
-          setProduct(res.data.data?.name);
+          setFinalProduct(res.data?.data?.details);
         })
         .catch();
     };
 
     const getVariants = async () => {
       await axios
-        .get(
-          `${base_url}/admin/company/variants/${props.newFinalProduct?.company_id}`
-        )
+        .get(`${base_url}/admin/company/variants/${props.companyId}`)
         .then((res) => {
           setVariants(res.data.data);
         })
         .catch((err) => console.log(err));
     };
 
-    getCompany();
-    getCLient();
-    getCategory();
-    getProduct();
+    getFinalProduct();
     getVariants();
   }, []);
 
@@ -84,7 +46,6 @@ function ModalAdd(props) {
     await axios
       .get(`${base_url}/admin/company/variant-values/${e?.target.value}`)
       .then((res) => {
-        console.log("ressss",res.data.data)
         setVariantValue(res?.data?.data);
       })
       .catch((err) => console.log(err));
@@ -93,7 +54,7 @@ function ModalAdd(props) {
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title> {t("AddNewProduct")}</Modal.Title>
+        <Modal.Title> {t("AddNewVarianValue")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">
@@ -102,49 +63,10 @@ function ModalAdd(props) {
             id="outlined-basic"
             variant="outlined"
             type="text"
-            label={t("Product")}
-            name="product_id"
-            value={product}
+            label={t("FinalProduct")}
+            name="final_product_id"
+            value={finalProduct}
           />
-          <TextField
-            className="input"
-            id="outlined-basic"
-            variant="outlined"
-            type="text"
-            label={t("Category")}
-            name="category_id"
-            value={category}
-          />
-
-          <TextField
-            className="input"
-            id="outlined-basic"
-            variant="outlined"
-            type="text"
-            label={t("Company")}
-            name="company_id"
-            value={company}
-          />
-          <TextField
-            className="input"
-            id="outlined-basic"
-            variant="outlined"
-            type="text"
-            label={t("Client")}
-            name="client_id"
-            value={client}
-          />
-          <TextField
-            className="input"
-            id="outlined-basic"
-            variant="outlined"
-            type="text"
-            label={t("Details")}
-            name="details"
-            value={props.newFinalProduct?.details}
-            onChange={props.handleChange}
-          />
-          {/* box select country & governorate */}
           {/* <Box> */}
           <Row>
             {/* variants */}
@@ -157,7 +79,7 @@ function ModalAdd(props) {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 label={t("Variants")}
-                value={props.newFinalProduct?.variants?.variant_id}
+                value={props.newVariantValue?.variant_id}
                 name="variant_id"
                 onChange={(e) => {
                   getVariantsValue(e);
@@ -181,7 +103,7 @@ function ModalAdd(props) {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 label={t("VariantValue")}
-                value={props.newFinalProduct?.variants?.variant_value_id}
+                value={props.newVariantValue?.variant_value_id}
                 name="variant_value_id"
                 onChange={props.handleChange}
               >
@@ -194,6 +116,19 @@ function ModalAdd(props) {
             </Col>
           </Row>
           {/* </Box> */}
+          <TextField
+            className="input"
+            style={{
+              marginTop: "20px",
+            }}
+            id="outlined-basic"
+            variant="outlined"
+            type="text"
+            label={t("Details")}
+            name="details"
+            value={props.newVariantValue?.details}
+            onChange={props.handleChange}
+          />
         </form>
       </Modal.Body>
       {/* footer */}
@@ -208,7 +143,7 @@ function ModalAdd(props) {
         <Button
           className="btn btn-primary"
           variant="primary"
-          onClick={props.handleSubmitAddFinalProduct}
+          onClick={props.handleSubmitAddFinalProductVariantValue}
         >
           {t("Save")}
         </Button>
