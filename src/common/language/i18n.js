@@ -116,6 +116,10 @@ i18n
           // Final Product Variant Value
           FinalProductVariantValues: "Final Product Variant Values",
           FinalProductId: "Final Product Id",
+          // Images
+          FinalProductImages:"Final Product Images",
+          Images: "Images",
+          AddImage: "Add Image",
         },
       },
       ar: {
@@ -222,7 +226,11 @@ i18n
           EditWareHouse: "تعديل مخزن ",
           // FinalProductVariantValue
           FinalProductVariantValues: "قيم الاصناف في المنتج النهائي",
-          FinalProductId:"الرقم االتعريفي للمنتج النهائي",
+          FinalProductId: "الرقم االتعريفي للمنتج النهائي",
+          // Images
+          FinalProductImage:"صور المننتج النهائي",
+          Images: "الصور ",
+          AddImage:"اضافة صورة",
         },
       },
     },

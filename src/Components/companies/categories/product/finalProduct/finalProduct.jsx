@@ -57,7 +57,7 @@ function FinalProduct(props) {
           .then((res) => {
             setLoading(false);
 
-            setColumnsHeader(["Id", "Details"]);
+            setColumnsHeader(["Id", "Details", "", ""]);
             setFinalProducts(res.data?.data);
             setTotalFinalProductsLength(res.data?.meta?.total);
           })
@@ -318,6 +318,16 @@ function FinalProduct(props) {
                       }
                     >
                       {t("VariantValue")}
+                    </Link>
+                  </td>
+
+                  <td>
+                    <Link
+                      to="/companies/category/product/finalProduct/images"
+                      className="btn btn-primary"
+                      onClick={() => props.handleFinalProductImage(item?.id)}
+                    >
+                      {t("Images")}
                     </Link>
                   </td>
 

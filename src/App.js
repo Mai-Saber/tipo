@@ -36,6 +36,7 @@ import "primereact/resources/primereact.css";
 import Contact from "./Components/companies/contact/contact";
 import WareHouse from "./Components/companies/branches/wareHouse/wareHouse";
 import FinalProductVariantValues from "./Components/companies/categories/product/finalProduct/variantValue/variantValues";
+import FinalProductImages from "./Components/companies/categories/product/finalProduct/images/images";
 
 // /////////////////////////////////////////
 const token = sessionStorage.getItem("token");
@@ -145,6 +146,9 @@ function App() {
   const handleFinalProductsVariantValue = (id, companyID) => {
     setFinalProductId(id);
     setCompanyId(companyID);
+  };
+  const handleFinalProductImage = (id) => {
+    setFinalProductId(id);
   };
 
   const handleCategories = (id, clientId) => {
@@ -265,6 +269,7 @@ function App() {
                         handleFinalProductsVariantValue={
                           handleFinalProductsVariantValue
                         }
+                        handleFinalProductImage={handleFinalProductImage}
                         productIdInApp={productId}
                         categoryIdInApp={categoryId}
                         companyIDInApp={companyID}
@@ -276,6 +281,12 @@ function App() {
                       <FinalProductVariantValues
                         finalProductIDInApp={finalProductId}
                         companyIDInApp={companyID}
+                      />
+                    }
+                    ///
+                    finalProductImages={
+                      <FinalProductImages
+                        finalProductIDInApp={finalProductId}
                       />
                     }
                     ///

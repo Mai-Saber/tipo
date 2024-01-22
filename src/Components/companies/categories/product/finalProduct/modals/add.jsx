@@ -146,8 +146,7 @@ function ModalAdd(props) {
           />
           {/* box select country & governorate */}
           {/* <Box> */}
-          <Row>
-            {/* variants */}
+          {/* <Row>
             <Col xs={6}>
               <InputLabel id="demo-simple-select-label">
                 {t("Variants")}{" "}
@@ -171,7 +170,7 @@ function ModalAdd(props) {
                 ))}
               </Select>
             </Col>
-            {/* variants Value */}
+            
             <Col xs={6}>
               <InputLabel id="demo-simple-select-label">
                 {t("VariantValue")}
@@ -192,7 +191,7 @@ function ModalAdd(props) {
                 ))}
               </Select>
             </Col>
-          </Row>
+          </Row> */}
           {/* </Box> */}
         </form>
       </Modal.Body>

@@ -5,7 +5,6 @@ import Table from "../../../../../../common/table/table";
 import "../../../../../../common/show modal/showModal.css";
 import TableFilter from "../../../../../../common/tableFilter/tableFilter";
 import Loading from "../../../../../../common/loading/loading";
-import TableIcons from "../../../../../../common/tableIcons/tableIcons";
 import WrongMessage from "../../../../../../common/wrongMessage/wrongMessage";
 import { base_url, config } from "../../../../../../service/service";
 
@@ -16,47 +15,42 @@ import { useTranslation } from "react-i18next";
 
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
-import ModalEdit from "./modals/edit";
+import { Link } from "react-router-dom";
 
-function FinalProductVariantValues(props) {
+function FinalProductImages(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
-  const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [finalProductId, setFinalProductId] = useState(
     props.finalProductIDInApp
   );
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [variantValues, setVariantValues] = useState([]);
-  const [totalProductsLength, setTotalProductsLength] = useState("");
+  const [images, setImages] = useState([]);
+  const [totalImagesLength, setTotalImagesLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
-  const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
-  const [editItem, setEditItem] = useState({});
-  const [newVariantValue, setNewVariantValue] = useState({
-    final_product_id: finalProductId,
-    variant_id: "",
-    variant_value_id: "",
-    details: "",
-  });
+
+  const [file, setFile] = useState();
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
     try {
-      // get variantsValue
-      const getVariantValues = async () => {
+      console.log("imgggggggggggg");
+      // get img
+      const getImages = async () => {
         try {
-          const url = `${base_url}/admin/company/category/product/final-product-variant-values/${finalProductId}`;
+          const url = `${base_url}/admin/company/category/product/final-product-images/${finalProductId}`;
           await axios
             .get(url)
             .then((res) => {
               setLoading(false);
-              setColumnsHeader(["Id", "Details"]);
-              setVariantValues(res.data?.data);
-              setTotalProductsLength(res.data.meta?.total);
+              setColumnsHeader(["Id", "images"]);
+              setImages(res.data?.data);
+              console.log(res.data.data);
+              setTotalImagesLength(res.data.meta?.total);
             })
             .catch((err) => {
               // loading
@@ -71,26 +65,11 @@ function FinalProductVariantValues(props) {
         }
       };
       // call functions
-      getVariantValues();
+      getImages();
     } catch (err) {
       console.log(err);
     }
   }, []);
-
-  // change any input
-  const handleChange = (e) => {
-    const newData = {
-      ...newVariantValue,
-      [e.target.name]: e.target.value,
-    };
-    setNewVariantValue(newData);
-
-    const newItem = {
-      ...editItem,
-      [e.target.name]: e.target.value,
-    };
-    setEditItem(newItem);
-  };
 
   // search & filter & pagination
 
@@ -126,14 +105,14 @@ function FinalProductVariantValues(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/category/product/final-product-variant-values/search/${finalProductId}?
+        `${base_url}/admin/company/category/product/final-product-images/search/${finalProductId}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setVariantValues(res.data.data);
+      setImages(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -143,11 +122,11 @@ function FinalProductVariantValues(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/category/product/final-product-variant-value/${id}`,
+        `${base_url}/admin/company/category/product/final-product-image/${id}`,
         config
       );
-      const newRow = variantValues.filter((item) => item.id !== id);
-      setVariantValues(newRow); // setRow(filterItems);
+      const newRow = images.filter((item) => item.id !== id);
+      setImages(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -171,38 +150,27 @@ function FinalProductVariantValues(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddFinalProductVariantValue = async () => {
-    const data = {
-      final_product_id: finalProductId,
-      variants: [
-        {
-          variant_id: newVariantValue.variant_id,
-          variant_value_id: newVariantValue.variant_value_id,
-          details: newVariantValue.details,
-        },
-      ],
-    };
+  const handleChangeFile = (event) => {
+    setFile(event.target.files[0]);
+    console.log("handleChangeFile", event.target.files[0]);
+  };
 
-    console.log(data);
-
+  const handleCreateImgFromFile = async ({ fileId }) => {
     await axios
-      .post(
-        `${base_url}/admin/company/category/product/final-product-variant-value`,
-        data
-      )
+      .post(`${base_url}/admin/company/category/product/final-product-image`, {
+        final_product_id: finalProductId,
+        files: [fileId],
+      })
       .then((res) => {
         Toastify({
-          text: `variant Value created successfully `,
+          text: `Image created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        variantValues.unshift(res.data.data);
-        setNewVariantValue({
-          final_product_id: finalProductId,
-          variants: [],
-        });
+        images.unshift(res.data.data);
+
         setAddModal(false);
       })
       .catch((err) => {
@@ -217,67 +185,40 @@ function FinalProductVariantValues(props) {
       });
   };
 
-  // show
-  const handleShow = async (id) => {
-    setShowModal(true);
-    const res = await axios.get(
-      `${base_url}/admin/company/category/product/final-product-variant-value/${id}`,
-      config
-    );
-    console.log("show",res.data.data);
-    setSelectedItem(res.data.data);
-  };
-
-  // edit
-  const handleEdit = async (id) => {
-    const res = await axios.get(
-      `${base_url}/admin/company/category/product/final-product-variant-value/${id}`
-    );
-    setEditItem(res.data.data);
-    setEditModal(true);
-  };
-
-  const handleSubmitEdit = async (id) => {
-    const data = {
-      details: editItem.details,
-    };
+  const handleUpload = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
     await axios
-      .patch(
-        `${base_url}/admin/company/category/product/final-product-variant-value/${id}`,
-        data
-      )
+      .post(`${base_url}/storage/file`, formData, {
+        headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+      })
       .then((res) => {
         Toastify({
-          text: `Variant Value updated successfully`,
+          text: res.data.message,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < variantValues.length; i++) {
-          if (variantValues[i].id === id) {
-            variantValues[i] = res.data.data;
-          }
-        }
-        setEditItem({});
-        setEditModal(false);
-      })
-      .catch((err) => {
-        Toastify({
-          text: `${err.response.data.message}`,
-          style: {
-            background: "red",
-            color: "white",
-          },
-        }).showToast();
+        handleCreateImgFromFile({ fileId: res.data.data.id });
       });
+  };
+
+  // show
+  const handleShow = async (id) => {
+    setShowModal(true);
+    const res = await axios.get(
+      `${base_url}/admin/company/category/product/final-product-image/${id}`,
+      config
+    );
+    console.log("show", res.data.data);
+    setSelectedItem(res.data.data);
   };
 
   // close any modal
   const handleClose = () => {
     setShowModal(false);
     setAddModal(false);
-    setEditModal(false);
   };
   // ////////////////////////////////////////
   return (
@@ -287,9 +228,9 @@ function FinalProductVariantValues(props) {
 
       {/* variants */}
       {!loading && !wrongMessage && (
-        <div className="FinalProductVariantValues">
+        <div className="FinalProductImages">
           {/* header */}
-          <h1 className="header">{t("FinalProductVariantValues")}</h1>
+          <h1 className="header">{t("FinalProductImages")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -299,33 +240,50 @@ function FinalProductVariantValues(props) {
               handleSearchReq(e, { queryString: e.target.value })
             }
           />
+
           {/* table */}
-          {variantValues.length !== 0 ? (
+          {images.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalProductsLength}
+              totalRecords={totalImagesLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {variantValues?.map((item, i) => (
+
+              {images?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
-                  <td>{item.details}</td>
+                  <td>
+                    <img src={item?.file?.file_path} alt="product img here" />
+                  </td>
                   {/* icons */}
-                  <TableIcons
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                    handleShow={handleShow}
-                  />
+                  <td className="icons">
+                    {/* delete */}
+                    <Link
+                      className="delete"
+                      to=""
+                      onClick={() => handleDelete(item?.id, props.item?.name)}
+                    >
+                      <i className="ri-delete-bin-2-fill"></i>
+                    </Link>
+                    {/* show */}
+
+                    <Link
+                      className="show"
+                      to=""
+                      onClick={() => handleShow(item?.id)}
+                    >
+                      <i className="ri-eye-line"></i>
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </Table>
           ) : (
-            <NoData data="Variant Value" />
+            <NoData data="Image" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -337,21 +295,9 @@ function FinalProductVariantValues(props) {
           {/* add modal */}
           <ModalAdd
             show={addModal}
-            companyId={companyID}
-            newVariantValue={newVariantValue}
+            handleUpload={handleUpload}
+            handleFile={handleChangeFile}
             handleClose={handleClose}
-            handleChange={handleChange}
-            handleSubmitAddFinalProductVariantValue={
-              handleSubmitAddFinalProductVariantValue
-            }
-          />
-          {/* edit modal */}
-          <ModalEdit
-            show={editModal}
-            handleClose={handleClose}
-            editItem={editItem}
-            handleChange={handleChange}
-            handleSubmitEdit={handleSubmitEdit}
           />
         </div>
       )}
@@ -361,4 +307,4 @@ function FinalProductVariantValues(props) {
   );
 }
 
-export default FinalProductVariantValues;
+export default FinalProductImages;

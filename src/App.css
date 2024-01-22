@@ -37,6 +37,9 @@
   display: inline-block !important;
 }
 
+.hidden {
+  display: none !important;
+}
 /* //// */
 .sideBar ul li a {
   text-decoration: none;
