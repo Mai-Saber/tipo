@@ -2,26 +2,65 @@
   height: 100vh;
   width: 10%;
   padding-top: 2%;
-  /* background-color: var(--main-color); */
-  background-color: #1CB5E0;
    position: sticky;
     top: 1px;
 }
-
-.sideBar ul {
-  list-style: none;
-  padding: 0;
+.sideBarBox {
+  padding-top: 20px;
 }
 
-.sideBar ul li {
-  padding-bottom: 20px;
-  width: fit-content;
-    margin: auto;
+.sideBarBox .imgTitleDiv {
+  width: 70px;
+  height: 70px;
+  margin: auto;
+}
+.sideBarBox .imgTitleDiv img {
+  width: 70px;
+  height: 50px;
+  border-radius: 5px;
+  padding-bottom: 5px;
+  position: relative;
+  right: 30px;
 }
 
-.sideBar ul li:hover {
+.sideBarBox .imgTitleDiv h3 {
   color: blue;
-}
+  text-transform: uppercase;
+  }
+  
+  .sideBarBox .ButtonImg {
+    display: flex;
+  }
+  
+  .sideBarBox .list {
+    margin-left: 20px;
+  }
+  
+  .sideBarBox .list a {
+    width: 100% !important;
+    display: flex !important;
+    text-decoration: none;
+  }
+  
+  .sideBarBox .ListItemIcon {
+    position: relative;
+    top: 5px;
+    min-width: 25;
+    justify-content: "center";
+    color: grey;
+    /* opacity: 30%; */
+    font-size: 40px;
+    background-color: "theme.palette.sideBar.background";
+  }
+  
+  .sideBarBox .Typography {
+    color: grey;
+    font-size: 13;
+    font-weight: 500;
+    font-family: "cairo";
+  }
+  
+
 /* ////////////////////////////////// */
 @media (min-width: 100px) and (max-width: 900px) {
   .sideBar {

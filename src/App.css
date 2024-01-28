@@ -24,10 +24,12 @@
   height: fit-content;
   /* overflow: hidden !important; */
 }
-
+.css-i9fmh8-MuiBackdrop-root-MuiModal-backdrop{
+  background-color: rgba(255, 255, 255, 0.164) !important;
+}
 .main {
   margin-top: 20px;
-  width: 90vw;
+  width: 70vw;
   position: relative;
   padding: 0px 24px;
   overflow: hidden !important;
@@ -39,11 +41,6 @@
 
 .hidden {
   display: none !important;
-}
-/* //// */
-.sideBar ul li a {
-  text-decoration: none;
-  color: var(--white-color) !important;
 }
 
 /* table */

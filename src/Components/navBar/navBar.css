@@ -1,107 +1,32 @@
 .navBar {
-  width: 100vw;
-  display: flex;
-  justify-content: space-between;
-  position: fixed;
-  top: 0px;
-  /* background-color: var(--main-color) !important; */
-  background: #000046;
-  background: -webkit-linear-gradient(to right, #1cb5e0, #000046);
-  background: linear-gradient(to right, #1cb5e0, #000046);
-  height: 70px;
-  z-index: 9;
-  font-size: 18px;
+  position: relative;
+  background-color: #fff;
+}
+.navBar .css-hip9hq-MuiPaper-root-MuiAppBar-root {
+  color: grey;
+  background-color: white !important;
 }
 
-.navBar .items {
-  width: 90vw;
-}
-
-.navBar a,
-.navBar p {
-  color: var(--white-color) !important;
+.navBar .rightPart {
+  position: absolute;
+  right: 20px;
+    width: 25%;
+  }
+.navBar .rightPart a {
+  color: grey;
   text-decoration: none;
 }
-
-.navBar img {
-  width: 50px;
-  height: 50px;
+.navBar .rightPart span {
+  margin-right: 20px;
+  color: grey;
+}
+.navBar .rightPart .avatar {
+  height: 30px;
+  width: 40px;
   border-radius: 50%;
-  position: relative;
-  right: 30px;
-  top: -3px;
+  margin-right: 30px;
 }
+.navBar .rightPart .language {
+  text-transform: uppercase !important;
 
-.navBar ul {
-  list-style: none;
-  display: flex;
-}
-
-.navBar ul li {
-  padding-right: 50px;
-}
-
-/* //////////////////////////// */
-.navBar .logout:hover {
-  color: rgb(86, 86, 190) !important;
-}
-
-.navBar select {
-  position: relative;
-  right: 30px;
-  width: 100px;
-  border-radius: 10px;
-  background-color: transparent;
-  color: white !important;
-  border: 1px solid grey !important;
-}
-
-.navBar select option {
-  color: var(--main-color) !important;
-}
-
-/* ///////////////// */
-@media (min-width: 100px) and (max-width: 900px) {
-  .navBar {
-    height: unset;
-    position: relative;
-    margin-bottom: -40px;
-  }
-
-  .navBar img {
-    margin-bottom: 20px;
-    position: relative;
-    right: 5px;
-    top: 8px;
-
-  }
-
-  .navBar .toggleButton {
-    background-color: white !important;
-    position: absolute;
-    right: 30px;
-  }
-
-  .items {
-    display: flex;
-    justify-content: space-between !important;
-    width: 80% !important;
-    position: relative;
-    right: 30px;
-  }
-
-  .items .welcome {
-    position: relative;
-    top: 7px;
-  }
-
-  .navBar select {
-    position: unset;
-    right: 0px;
-    margin-right: 10px;
-  }
-
-  .navBar .items a:hover {
-    color: rgb(86, 86, 190) !important;
-  }
 }

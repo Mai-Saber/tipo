@@ -44,6 +44,7 @@ function Login(props) {
       .then((response) => {
         sessionStorage.setItem("token", response.data.data.token);
         sessionStorage.setItem("name", response.data.data.name);
+        sessionStorage.setItem("prefix","Admin")
 
         Toastify({
           text: `Hello ${response.data.data.name}`,

@@ -1,57 +1,162 @@
 import React, { useState, useEffect } from "react";
-
-import "../../common/show modal/showModal.css";
-import NoData from "../../common/noData/noData";
-import Table from "../../common/table/table";
-import Loading from "../../common/loading/loading";
-import TableFilter from "../../common/tableFilter/tableFilter";
-import TableIcons from "../../common/tableIcons/tableIcons";
-import WrongMessage from "../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../service/service";
-
 import axios from "axios";
-import { Link } from "react-router-dom";
-import Toastify from "toastify-js";
-import "toastify-js/src/toastify.css";
-import { useTranslation } from "react-i18next";
+import { Paginator } from "primereact/paginator";
 
-import ModalShow from "./modals/show";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
+import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
+import NoData from "../../common/noData/noData";
+
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
+import Loading from "../../common/loading/loading";
+import WrongMessage from "../../common/wrongMessage/wrongMessage";
+import {
+  Box,
+  Button,
+  IconButton,
+  MenuItem,
+  Stack,
+  TextField,
+} from "@mui/material";
+import "./countries.css";
+import { useTranslation } from "react-i18next";
+import AddLocationAltOutlinedIcon from "@mui/icons-material/AddLocationAltOutlined";
+import { base_url, config } from "../../service/service";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
+import { use } from "i18next";
+
 function Countries(props) {
   const [loading, setLoading] = useState(true);
-   const [wrongMessage, setWrongMessage] = useState(false);
-  const [columnsHeader, setColumnsHeader] = useState([]);
+  const [activeId, setActiveId] = useState("");
+  const [wrongMessage, setWrongMessage] = useState(false);
+  const [totalcountrysLength, setTotalcountrysLength] = useState("");
   const [countries, setCountries] = useState([]);
-  const [totalCountriesLength, setTotalCountriesLength] = useState("");
+  const [ActiveIdArr] = useState([
+    {
+      id: "active",
+      name: "Active",
+    },
+    {
+      id: "inactive",
+      name: "InActive",
+    },
+  ]);
   //modals
-  const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
   const [newCountry, setNewCountry] = useState({
     name: "",
     name_ar: "",
-    phone_code: "",
+    phoneCode: "",
     prefix: "",
   });
   const { t } = useTranslation();
+  const columns = [
+    {
+      field: "id",
+      headerName: "Id",
+      width: 33,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "name",
+      headerName: t("Name"),
+      align: "center",
+      headerAlign: "center",
+      flex: 1,
+    },
+    {
+      field: "nameAr",
+      headerName: t("NameAr"),
+      align: "center",
+      headerAlign: "center",
+      flex: 1,
+    },
+    {
+      field: "phoneCode",
+      headerName: t("PhoneCode"),
+      flex: 1,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "prefix",
+      headerName: t("Prefix"),
+      flex: 1,
+      align: "center",
+      headerAlign: "center",
+    },
 
+    {
+      field: "activation",
+      headerName: t("Activation"),
+      flex: 1,
+      flexGrow: 1,
+      align: "center",
+      headerAlign: "center",
+      renderCell: ({ row }) => {
+        return (
+          <Box className="activeBox">
+            <IconButton
+              id="activButton"
+              color="success"
+              onClick={() => {
+                ChangeCountryStatus(row);
+              }}
+            >
+              <CheckBoxOutlinedIcon
+                sx={{
+                  color: row.active ? "green" : "red",
+                }}
+                fontSize="small"
+              />
+            </IconButton>
+          </Box>
+        );
+      },
+    },
+
+    {
+      field: "actions",
+      headerName: t("Actions"),
+      flex: 1,
+      align: "center",
+      headerAlign: "center",
+      renderCell: ({ row }) => {
+        return (
+          <Box className="actionsBox">
+            <IconButton color="success" onClick={() => handleEdit(row.id)}>
+              <BorderColorOutlinedIcon
+                sx={{
+                  color: "green",
+                }}
+                fontSize="small"
+              />
+            </IconButton>
+          </Box>
+        );
+      },
+    },
+  ];
+  // //////////////////////////////////////////////////////////////
   // general
   useEffect(() => {
-    // get countries
+    // get countrys
     const getCountries = async () => {
       const url = `${base_url}/admin/countries`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
-          setColumnsHeader(["Id","Name", "Arabic Name", "Phone Code", "Prefix"]);
           setCountries(res.data.data);
-          setTotalCountriesLength(res.data.meta?.total);
+          setTotalcountrysLength(res.data.meta?.total);
         })
+
         .catch((err) => {
           // loading
           setTimeout(function () {
@@ -61,7 +166,6 @@ function Countries(props) {
           setWrongMessage(true);
         });
     };
-
     // call functions
     getCountries();
   }, []);
@@ -81,6 +185,7 @@ function Countries(props) {
     setEditItem(newItem);
   };
 
+  // search & filter
   // search & filter & pagination
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -116,8 +221,8 @@ function Countries(props) {
 
       const res = await axios.get(
         `${base_url}/admin/countries/search?
-        query_string=${queryString || ""}
-        &per_page=${Number(perPage) || ""}
+          per_page=${Number(perPage) || ""}
+          &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
@@ -128,49 +233,35 @@ function Countries(props) {
     }
   };
 
-  // delete
-  const handleDelete = async (id, name) => {
-    if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/country/${id}`, config);
-      const newRow = countries.filter((item) => item.id !== id);
-      setCountries(newRow); // setRow(filterItems);
-      Toastify({
-        text: `${name} deleted `,
-        style: {
-          background: "green",
-          color: "white",
-        },
-      }).showToast();
-    } else {
-      Toastify({
-        text: `${name} haven't deleted `,
-        style: {
-          background: "orange",
-          color: "white",
-        },
-      }).showToast();
-    }
-  };
-
   // add
   const handleAdd = () => {
     setAddModal(true);
-    setNewCountry({ name: "", name_ar: "", phone_code: "", prefix: "" });
+    setNewCountry({
+      name: "",
+      nameAr: "",
+      phoneCode: "",
+      prefix: "",
+    });
   };
 
   const handleSubmitAddCountry = async () => {
     await axios
       .post(`${base_url}/admin/country`, newCountry)
-      .then((response) => {
+      .then((res) => {
         Toastify({
-          text: `country created successfully `,
+          text: `country created successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        countries.unshift(response.data.data);
-        setNewCountry({ name: "", name_ar: "", phone_code: "", prefix: "" });
+        countries.unshift(res.data.data);
+        setNewCountry({
+          name: "",
+          name_ar: "",
+          phoneCode: "",
+          prefix: "",
+        });
         setAddModal(false);
       })
       .catch((err) => {
@@ -185,18 +276,11 @@ function Countries(props) {
       });
   };
 
-  // show
-  const handleShow = async (id) => {
-    setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/country/${id}`, config);
-    console.log(res.data);
-    setSelectedItem(res.data.data);
-  };
-
   // edit
   const handleEdit = async (id) => {
     console.log("edit", id);
     const res = await axios.get(`${base_url}/admin/country/${id}`);
+    console.log("edit", res.data.data);
     setEditItem(res.data.data);
     setEditModal(true);
   };
@@ -234,92 +318,142 @@ function Countries(props) {
             color: "white",
           },
         }).showToast();
+        console.log(err);
       });
   };
 
   // close any modal
   const handleClose = () => {
-    setShowModal(false);
     setAddModal(false);
     setEditModal(false);
   };
-  // ////////////////////////////////////////
+
+  const handleChangeSelectActive = (id) => {
+    setActiveId(id === "all" ? "" : id);
+  };
+
+  const ChangeCountryStatus = async (country) => {
+    const url = country.active
+      ? `${base_url}/admin/country-inactive/${country.id}`
+      : `${base_url}/admin/country-active/${country.id}`;
+    await axios.patch(url, {}, config);
+    setCountries(
+      countries.filter((row) => {
+        return row.id !== country.id;
+      })
+    );
+  };
+
+  ////////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-
       {/* countries */}
-
       {!loading && !wrongMessage && (
         <div className="countries">
-          {/* header */}
-          <h1 className="header">{t("Countries")}</h1>
-
-          {/* upper table */}
-          <TableFilter
-            handleAdd={handleAdd}
-            inputName="queryString"
-            inputValue={searchRequestControls.queryString}
-            handleChangeSearch={(e) =>
-              handleSearchReq(e, { queryString: e.target.value })
-            }
-          />
-
+          {/* header & add button */}
+          <Box className="headerBox">
+            <h3 className="header">{t("Countries")}</h3>
+            <Button
+              className="btn add"
+              variant="contained"
+              size="small"
+              onClick={handleAdd}
+              startIcon={<AddLocationAltOutlinedIcon />}
+            >
+              {t("AddNewCountry")}
+            </Button>
+          </Box>
+          {/* filters */}
+          <Box className="filters">
+            <Stack className="stack">
+              <TextField
+                id={"selectedActive"}
+                select
+                label={t("Active ")}
+                defaultValue="all"
+                variant="standard"
+                size="small"
+                onChange={(event) => {
+                  handleChangeSelectActive(event.target.value);
+                }}
+              >
+                {/* active filter */}
+                <MenuItem key="all" value="all">
+                  {t("All")}
+                </MenuItem>
+                {ActiveIdArr?.map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+            {/* search */}
+            <Stack className="searchStack">
+              <TextField
+                className="inputSearch"
+                autoFocus
+                margin="dense"
+                id="search"
+                label={t("Search")}
+                type="search"
+                fullWidth
+                variant="standard"
+                name="queryString"
+                value={searchRequestControls.queryString}
+                onChange={(e) =>
+                  handleSearchReq(e, { queryString: e.target.value })
+                }
+              />
+            </Stack>
+          </Box>
           {/* table */}
           {countries.length !== 0 ? (
-            <Table
-              columns={columnsHeader}
-              // pagination
-              first={pageNumber}
-              rows={rowsPerPage}
-              totalRecords={totalCountriesLength}
-              onPageChange={onPageChange}
-            >
-              {/* table children */}
-              {countries?.map((item,i) => (
-                <tr key={item.id}>
-                  <td>{i+1}</td>
-                  <td className="name">{item.name} </td>
-                  <td>{item.name_ar}</td>
-                  <td>{item.phone_code}</td>
-                  <td>{item.prefix}</td>
-                  <td>
-                    <Link
-                      className="btn btn-primary"
-                      to="/governorate"
-                      onClick={() => props.handleGovernorate(item.id)}
-                    >
-                      {t("Governorate")}
-                    </Link>
-                  </td>
-
-                  <TableIcons
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                    handleShow={handleShow}
-                  />
-                </tr>
-              ))}
-              {/* pagination */}
-            </Table>
+            <DataGrid
+              sx={{ mt: 3 }}
+              rows={countries.map((item) => {
+                return {
+                  id: item.id,
+                  name: item.name,
+                  nameAr: item.name_ar,
+                  phoneCode: item.phone_code,
+                  prefix: item.prefix,
+                  active: item.active,
+                };
+              })}
+              rowHeight={40}
+              slots={{ toolbar: GridToolbar }}
+              // @ts-ignore
+              columns={columns}
+              autoHeight
+              hideFooter
+            />
           ) : (
-            <NoData data="Country" />
+            <NoData data="country" />
           )}
+          {/* pagination */}
+          <Stack className="paginationStack">
+            <div className="card">
+              <Paginator
+                rowsPerPageOptions={[5, 10, 20, 30]}
+                first={pageNumber}
+                rows={rowsPerPage}
+                totalRecords={totalcountrysLength}
+                onPageChange={onPageChange}
+              />
+            </div>
+          </Stack>
 
           {/* modals */}
-          {/* show modal */}
-          <ModalShow
-            show={showModal}
-            handleClose={handleClose}
-            item={selectedItem}
-          />
+
           {/* add modal */}
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newCountry={newCountry}
+            title={t("AddNewcountry")}
+            newcountry={newCountry}
             handleChange={handleChange}
             handleSubmitAddCountry={handleSubmitAddCountry}
           />
@@ -329,11 +463,11 @@ function Countries(props) {
             handleClose={handleClose}
             editItem={editItem}
             handleChange={handleChange}
-            handleSubmitEdit={handleSubmitEdit}
+            handleSubmitEdit={() => handleSubmitEdit(editItem.id)}
           />
         </div>
       )}
-
+      {/* wrong message */}
       {!loading && wrongMessage && <WrongMessage />}
     </>
   );

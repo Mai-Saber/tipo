@@ -6,12 +6,12 @@ import { useTranslation } from "react-i18next";
 import { TextField } from "@mui/material";
 
 function ModalEdit(props) {
-          const { t } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title> {t("EditCountry")}</Modal.Title>
+        <Modal.Title>{t("EditCountry")} </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">
@@ -31,23 +31,21 @@ function ModalEdit(props) {
             id="outlined-basic"
             variant="outlined"
             type="text"
-            label={t("ArabicName")}
-            name="name_ar"
-            value={props.editItem?.name_ar}
+            label={t("Arabic Name")}
+            name="nameAr"
+            value={props.editItem?.nameAr}
             onChange={props.handleChange}
           />
-
           <TextField
             className="input"
             id="outlined-basic"
             variant="outlined"
             type="number"
-            label={t("PhoneCode")}
-            name="phone_code"
-            value={props.editItem?.phone_code}
+            label={t("Phone Code")}
+            name="phoneCode"
+            value={props.editItem?.phoneCode}
             onChange={props.handleChange}
           />
-
           <TextField
             className="input"
             id="outlined-basic"
@@ -71,7 +69,8 @@ function ModalEdit(props) {
         <Button
           className="btn btn-primary"
           variant="primary"
-          onClick={() =>props.handleSubmitEdit(props.editItem?.id)}
+          onClick={props.handleSubmitEdit}
+          //   onClick={() => handleSubmitEdit(editItem.id)}
         >
           {t("Save")}
         </Button>

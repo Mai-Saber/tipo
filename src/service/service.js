@@ -1,6 +1,5 @@
-import axios from "axios";
 
-export const base_url = "https://backend.profitsway.net/erp/public/api";
+export const base_url = "https://portal.tiposmart.com/api";
 
 export const config = {
   headers: {
@@ -10,7 +9,3 @@ export const config = {
   },
 };
 
-export const getData = async (url) => {
-  const res = await axios.get(`${base_url}+${url}`);
-  return res;
-};
