@@ -24,12 +24,13 @@
   height: fit-content;
   /* overflow: hidden !important; */
 }
+
 .css-i9fmh8-MuiBackdrop-root-MuiModal-backdrop{
   background-color: rgba(255, 255, 255, 0.164) !important;
 }
 .main {
-  margin-top: 20px;
-  width: 70vw;
+  width: 80vw;
+  margin-top: 22px;
   position: relative;
   padding: 0px 24px;
   overflow: hidden !important;
